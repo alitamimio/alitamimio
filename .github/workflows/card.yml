@@ -1,0 +1,53 @@
+name: card
+
+# Rebuilds the profile card each night so the figures in it stay true.
+# No secret is needed: tools/stats.py reads the public contributions
+# calendar, which already includes private work because "include private
+# contributions on my profile" is on.
+
+on:
+  schedule:
+    - cron: "17 3 * * *"      # 03:17 UTC, off the hour so it is not queued with everyone else
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ["tools/**", ".github/workflows/card.yml"]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: card
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # A failure here leaves tools/stats.json untouched, so the card simply
+      # keeps yesterday's numbers rather than rendering an empty block.
+      - name: Refresh the figures
+        run: python tools/stats.py
+
+      - name: Rebuild the card
+        run: python tools/build.py
+
+      - name: Commit if anything moved
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if git diff --quiet -- assets tools/stats.json; then
+            echo "nothing changed today"
+            exit 0
+          fi
+          git add assets tools/stats.json
+          git commit -m "chore(card): refresh the figures
+
+          Nightly rebuild from the public contributions calendar."
+          git push
