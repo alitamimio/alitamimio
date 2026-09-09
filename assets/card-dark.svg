@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="1040" viewBox="0 0 1000 1040" fill="none" font-family="system-ui,-apple-system,'Segoe UI',Roboto,sans-serif">
+  <defs>
+    <clipPath id="card"><rect width="1000" height="1040" rx="18"/></clipPath>
+    <filter id="soft" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="110"/></filter>
+    <linearGradient id="sweep" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="360" y2="0">
+      <stop offset="0" stop-color="#f1f3f4"/>
+      <stop offset="0.4" stop-color="#f1f3f4"/>
+      <stop offset="0.5" stop-color="#64d6f2"/>
+      <stop offset="0.6" stop-color="#f1f3f4"/>
+      <stop offset="1" stop-color="#f1f3f4"/>
+      <animateTransform attributeName="gradientTransform" type="translate" from="-420 0" to="1120 0" dur="5s" repeatCount="indefinite"/>
+    </linearGradient>
+    <linearGradient id="rule" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#039bb9" stop-opacity="0.9"/><stop offset="1" stop-color="#039bb9" stop-opacity="0"/></linearGradient>
+  </defs>
+  <g clip-path="url(#card)">
+    <rect width="1000" height="1040" fill="#121517"/>
+    <g filter="url(#soft)" opacity="0.72">
+      <circle cx="830" cy="120" r="190" fill="#039bb9" opacity="0.95"><animateTransform attributeName="transform" type="translate" values="0 0; -55 60; 35 -30; 0 0" dur="27s" repeatCount="indefinite"/></circle>
+      <circle cx="940" cy="640" r="165" fill="#027c93" opacity="0.8"><animateTransform attributeName="transform" type="translate" values="0 0; 45 -70; -50 30; 0 0" dur="34s" repeatCount="indefinite"/></circle>
+      <circle cx="720" cy="1000" r="150" fill="#00343f" opacity="0.9"><animateTransform attributeName="transform" type="translate" values="0 0; 70 -40; -25 -60; 0 0" dur="41s" repeatCount="indefinite"/></circle>
+    </g>
+    <rect width="1000" height="1040" fill="#121517" opacity="0.06"/>
+  </g>
+  <rect x="0.5" y="0.5" width="999" height="1039" rx="18" fill="none" stroke="#2a2e31"/>
+  <text x="64" y="122" font-size="56" font-weight="700" letter-spacing="7" fill="url(#sweep)">ALI TAMIMI</text>
+  <rect x="66" y="144" width="300" height="2" rx="1" fill="url(#rule)"/>
+  <text x="66" y="182" font-size="17" fill="#f1f3f4">Frontend and full-stack engineer.</text>
+  <text x="66" y="210" font-size="15" fill="#9fa4a7">Most of what I build is bilingual, Arabic and English, and ships to people who are not developers.</text>
+  <g transform="translate(872 52)"><circle cx="0" cy="-4" r="4" fill="#20ac88"><animate attributeName="opacity" values="1;0.35;1" dur="2.8s" repeatCount="indefinite"/></circle><text x="14" y="0" font-size="11.5" letter-spacing="1.6" font-weight="600" fill="#9fa4a7">AMMAN, JO</text></g>
+  <text x="64" y="272" font-size="11.5" fill="#707579" font-weight="600" letter-spacing="2">WORK</text>
+  <rect x="108" y="267" width="788" height="1" fill="#2a2e31"/>
+  <text x="64" y="316" font-size="15" fill="#039bb9" font-weight="700" letter-spacing="1.4">KHAYARAK</text>
+  <text x="64" y="340" font-size="15.5" fill="#f1f3f4">Price comparison for the Jordanian market. Arabic and English, full RTL.</text>
+  <text x="64" y="362" font-size="13.5" fill="#707579">Next.js 16 · Tailwind v4 · TypeScript · Python gateway · streaming answers</text>
+  <text x="64" y="402" font-size="15" fill="#039bb9" font-weight="700" letter-spacing="1.4">VOC360</text>
+  <text x="64" y="426" font-size="15.5" fill="#f1f3f4">Fourteen services for public-sector feedback: intake, classification, root cause, BI.</text>
+  <text x="64" y="448" font-size="13.5" fill="#707579">FastAPI · PostgreSQL + pgvector · Redis · Docker</text>
+  <text x="64" y="488" font-size="15" fill="#039bb9" font-weight="700" letter-spacing="1.4">RASED</text>
+  <text x="64" y="512" font-size="15.5" fill="#f1f3f4">Traffic intelligence on live data. Dashboards and computer-vision supervision.</text>
+  <text x="64" y="534" font-size="13.5" fill="#707579">Node · Prometheus · PostgreSQL · Docker</text>
+  <text x="64" y="574" font-size="15" fill="#039bb9" font-weight="700" letter-spacing="1.4">FORTILINK</text>
+  <text x="64" y="598" font-size="15.5" fill="#f1f3f4">Fortinet integration plugin.</text>
+  <text x="64" y="620" font-size="13.5" fill="#707579">TypeScript</text>
+  <text x="64" y="664" font-size="11.5" fill="#707579" font-weight="600" letter-spacing="2">THE GATE</text>
+  <rect x="152" y="659" width="744" height="1" fill="#2a2e31"/>
+  <text x="64" y="704" font-size="15.5" fill="#f1f3f4">Every commit runs it: 90 colour pairs checked for WCAG contrast,</text>
+  <text x="64" y="728" font-size="15.5" fill="#f1f3f4">207 files checked against the design rules, then types and lint.</text>
+  <text x="64" y="784" font-size="11.5" fill="#707579" font-weight="600" letter-spacing="2">STACK</text>
+  <rect x="119" y="779" width="777" height="1" fill="#2a2e31"/>
+  <path d="M64 819 L69 824 L64 829 L59 824 Z" fill="#039bb9"/>
+  <text x="82" y="828" font-size="11.5" fill="#707579" font-weight="600" letter-spacing="1.6">FRONT</text>
+  <text x="170" y="828" font-size="14.5" fill="#f1f3f4">Next.js · React · TypeScript · Tailwind · SVG motion · a11y · RTL</text>
+  <path d="M64 851 L69 856 L64 861 L59 856 Z" fill="#039bb9"/>
+  <text x="82" y="860" font-size="11.5" fill="#707579" font-weight="600" letter-spacing="1.6">BACK</text>
+  <text x="170" y="860" font-size="14.5" fill="#f1f3f4">Python · FastAPI · Node · PostgreSQL · Redis · pgvector</text>
+  <path d="M64 883 L69 888 L64 893 L59 888 Z" fill="#039bb9"/>
+  <text x="82" y="892" font-size="11.5" fill="#707579" font-weight="600" letter-spacing="1.6">INFRA</text>
+  <text x="170" y="892" font-size="14.5" fill="#f1f3f4">Docker · Compose · Prometheus · Tailscale · GitHub Actions</text>
+  <path d="M64 915 L69 920 L64 925 L59 920 Z" fill="#039bb9"/>
+  <text x="82" y="924" font-size="11.5" fill="#707579" font-weight="600" letter-spacing="1.6">AI</text>
+  <text x="170" y="924" font-size="14.5" fill="#f1f3f4">LLM gateways · SSE streaming · RAG · Ollama</text>
+  <text x="64" y="1000" font-size="12.5" fill="#707579">Amman, Jordan · most of my work is in private and organisation repos</text>
+</svg>
