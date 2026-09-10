@@ -150,6 +150,9 @@ def build(c, stats):
     o.append('      <animateTransform attributeName="gradientTransform" type="translate" '
              f'from="-420 0" to="{W + 120} 0" dur="5s" repeatCount="indefinite"/>')
     o.append('    </linearGradient>')
+    o.append(f'    <linearGradient id="beam" x1="0" y1="0" x2="1" y2="0">'
+             f'<stop offset="0" stop-color="{c["sweep"]}" stop-opacity="0"/>'
+             f'<stop offset="1" stop-color="{c["sweep"]}" stop-opacity="0.85"/></linearGradient>')
     o.append(f'    <linearGradient id="rule" x1="0" y1="0" x2="1" y2="0">'
              f'<stop offset="0" stop-color="{c["brand"]}" stop-opacity="0.9"/>'
              f'<stop offset="1" stop-color="{c["brand"]}" stop-opacity="0"/></linearGradient>')
@@ -317,10 +320,12 @@ def build(c, stats):
         o.append(f'  <path d="M{xs[i+1]-9} {cy-4} l5 4 l-5 4" stroke="{c["faint"]}" '
                  f'stroke-width="1.4" fill="none"/>')
     for i, (top, sub) in enumerate(PIPE):
-        # Each node brightens as the pulse reaches it. One 6s animation per
+        # Each node brightens as the request reaches it. One 6s animation per
         # node with the spike placed by keyTimes, so the glows stay locked to
-        # the pulse instead of drifting out of phase over time.
-        at = 0.06 + i * 0.28
+        # the beam instead of drifting out of phase over time. The spacing
+        # tracks the beam's own window, which now ends at 0.62 to leave the
+        # rest of the cycle to the response.
+        at = 0.06 + i * 0.18
         o.append(f'  <g><rect x="{xs[i]}" y="{y}" width="{bw}" height="{bh}" rx="10" '
                  f'fill="{c["inset"]}" stroke="{c["brand"]}" stroke-width="1.2" stroke-opacity="0.3">'
                  f'<animate attributeName="stroke-opacity" '
@@ -330,13 +335,35 @@ def build(c, stats):
                  f'font-weight="600" letter-spacing="1.6" fill="{c["ink"]}">{top}</text>'
                  f'<text x="{xs[i]+bw/2}" y="{y+40}" text-anchor="middle" font-size="12" '
                  f'fill="{c["faint"]}">{sub}</text></g>')
-    o.append(f'  <circle r="4.5" fill="{c["sweep"]}">'
+    # The request, as a beam with a tail rather than a dot: it reads as
+    # something travelling in a direction, which a circle does not.
+    o.append(f'  <g><rect x="-30" y="-2" width="30" height="4" rx="2" fill="url(#beam)"/>'
+             f'<circle r="4.5" fill="{c["sweep"]}"/>'
              f'<animateMotion dur="6s" repeatCount="indefinite" keyPoints="0;0;1;1" '
-             f'keyTimes="0;0.06;0.90;1" calcMode="linear" '
+             f'keyTimes="0;0.06;0.62;1" calcMode="linear" '
              f'path="M{xs[0]+bw/2} {cy} H{xs[3]+bw/2}"/>'
-             f'<animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.07;0.89;1" '
-             f'dur="6s" repeatCount="indefinite"/></circle>')
-    y += bh + 30
+             f'<animate attributeName="opacity" values="0;1;1;0;0" '
+             f'keyTimes="0;0.07;0.6;0.64;1" dur="6s" repeatCount="indefinite"/></g>')
+
+    # And the answer coming back, which is the half the old version left out.
+    # The response does not retrace the request; it runs its own lane under
+    # the row, dashed, and arrives as separate tokens rather than one object.
+    ret = round(y + bh + 24)
+    lane = (f'M{xs[3]+bw/2} {y+bh} V{ret} H{xs[0]+bw/2} V{y+bh}')
+    o.append(f'  <path d="{lane}" stroke="{c["line"]}" stroke-width="1.5" fill="none" '
+             f'stroke-dasharray="3 5"/>')
+    for i in range(3):
+        at, end = round(0.6 + i * 0.05, 3), round(0.88 + i * 0.05, 3)
+        o.append(f'  <rect x="-4" y="-1.5" width="8" height="3" rx="1.5" fill="{c["sweep"]}" '
+                 f'opacity="0">'
+                 f'<animateMotion dur="6s" repeatCount="indefinite" path="{lane}" '
+                 f'keyPoints="0;0;1;1" keyTimes="0;{at};{end};1" calcMode="linear"/>'
+                 f'<animate attributeName="opacity" values="0;0;0.95;0.95;0;0" '
+                 f'keyTimes="0;{at};{round(at+0.02,3)};{round(end-0.02,3)};{end};1" '
+                 f'dur="6s" repeatCount="indefinite"/></rect>')
+    o.append(txt((xs[0] + xs[3] + bw) / 2, ret + 17, "tokens streaming back over SSE",
+                 c["faint"], 11.5, anchor="middle"))
+    y += bh + 74   # the caption under the lane needs the same air as a section break
 
     # ---- this year --------------------------------------------------------
     if stats:
