@@ -1,13 +1,15 @@
 #!/usr/bin/env python3
 """The card's audit gate: prove it is sound, then shoot it mid-motion.
 
-Three checks and a screenshot:
+Four checks and a screenshot:
 
-  1. Both themes parse as XML.
+  1. Both themes parse as XML, and so does every link button.
   2. The number of indefinitely-repeating animations stays under the ceiling a
      headless renderer can cope with (see build.py).
   3. No <text> runs past the card's right edge — the regression that a longer
      sentence in build.py's copy causes every time.
+  4. No <text> escapes the box drawn around it. Ali caught the STREAMING pill
+     doing exactly that, five pixels of it, so the check exists now.
 
 Then it shoots both themes with every `begin` shifted negative. A headless
 screenshot driven by --virtual-time-budget stops advancing the clock on a
@@ -27,10 +29,11 @@ CHROME = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
 NS = "{http://www.w3.org/2000/svg}"
 ANIM = re.compile(r'<(animate|animateTransform|animateMotion)\b[^>]*/>')
 BEGIN = re.compile(r'begin="(-?[\d.]+)s"')
+TRANSLATE = re.compile(r"translate\(\s*(-?[\d.]+)[ ,]+(-?[\d.]+)\s*\)")
 
 # Rough advance width per em: enough to catch a sentence running off the card,
 # not enough to be trusted for layout.
-ADVANCE = {"mono": 0.60, "sans": 0.55}
+ADVANCE = {"mono": 0.60, "sans": 0.55, "caps": 0.74}
 
 
 def shift(svg, at):
@@ -48,22 +51,83 @@ def shift(svg, at):
     return ANIM.sub(one, svg)
 
 
+def extent(t):
+    """A text run as (string, left, right) in user units, or None with no x.
+
+    Uppercase runs get a wider per-em figure. Tracked caps are the thing that
+    actually overflows, and averaging them in with lowercase prose is how the
+    STREAMING pill came out five pixels too narrow.
+    """
+    s = "".join(t.itertext())
+    if not s or t.get("x") is None:
+        return None
+    size = float(t.get("font-size", 16))
+    if "mono" in (t.get("font-family") or ""):
+        per = ADVANCE["mono"]
+    else:
+        per = ADVANCE["caps"] if s == s.upper() else ADVANCE["sans"]
+    wide = len(s) * size * per + len(s) * float(t.get("letter-spacing", 0))
+    x, anchor = float(t.get("x")), t.get("text-anchor")
+    left = x if anchor is None else (x - wide / 2 if anchor == "middle" else x - wide)
+    return s, left, left + wide
+
+
+def walk(el, dx=0.0):
+    """Every element, with the horizontal offset of its translated ancestors.
+
+    Without this the gate reads raw x attributes, so anything inside a
+    translated group looks like it sits at zero — which is precisely where
+    AMMAN, JO lives, the label that was hanging 37px past the margin while
+    this check reported nothing.
+    """
+    m = TRANSLATE.search(el.get("transform") or "")
+    if m:
+        dx += float(m.group(1))
+    yield el, dx
+    for kid in el:
+        yield from walk(kid, dx)
+
+
 def overflow(path):
     """Every text run's right edge, worst first."""
-    root = ET.parse(path).getroot()
     worst = []
-    for t in root.iter(NS + "text"):
-        s = "".join(t.itertext())
-        if not s or t.get("x") is None:
-            continue
-        size = float(t.get("font-size", 16))
-        fam = "mono" if "mono" in (t.get("font-family") or "") else "sans"
-        wide = len(s) * size * ADVANCE[fam] + len(s) * float(t.get("letter-spacing", 0))
-        anchor = t.get("text-anchor")
-        x = float(t.get("x"))
-        right = x + wide if anchor is None else (x + wide / 2 if anchor == "middle" else x)
-        worst.append((round(right), s[:46]))
+    for el, dx in walk(ET.parse(path).getroot()):
+        if el.tag == NS + "text":
+            e = extent(el)
+            if e:
+                worst.append((round(e[2] + dx), e[0][:46]))
     return sorted(worst, reverse=True)
+
+
+def escapes(path):
+    """Type that runs outside the box drawn around it.
+
+    Any group holding exactly one rect and some text is a chip: the status
+    pill, a tool in the trace, a pipeline node, a link button. The rect is the
+    box and the text has to sit inside it with a little air. This is the check
+    that would have caught the STREAMING pill before it shipped.
+    """
+    out = []
+    root_el = ET.parse(path).getroot()
+    # The root counts as a container too: a link button is a rect, a mark and
+    # a label sitting directly in its own <svg>, with no group around them.
+    for g, dx in walk(root_el):
+        if g is not root_el and g.tag != NS + "g":
+            continue
+        rects, texts = g.findall(NS + "rect"), g.findall(NS + "text")
+        if len(rects) != 1 or not texts or rects[0].get("width") is None:
+            continue
+        bx = float(rects[0].get("x", 0)) + dx
+        bw = float(rects[0].get("width"))
+        for t in texts:
+            e = extent(t)
+            if not e:
+                continue
+            left, right = e[1] + dx, e[2] + dx
+            if left < bx + 3 or right > bx + bw - 3:
+                out.append(f"{e[0]!r} spans {round(left)}..{round(right)} in a box "
+                           f"of {round(bx)}..{round(bx + bw)}")
+    return out
 
 
 ap = argparse.ArgumentParser()
@@ -93,6 +157,20 @@ for theme in ("dark", "light"):
     over = [w for w in overflow(svg_path) if w[0] > W - MARGIN]
     for right, s in over:
         bad.append(f"{theme}: text reaches {right}px (limit {W - MARGIN}) — {s!r}")
+
+    for esc in escapes(svg_path):
+        bad.append(f"{theme}: {esc}")
+
+    # The link buttons are cards too, small ones, and their labels set their
+    # width — so they get the same containment check and the same parse.
+    for btn in sorted((root / "assets").glob(f"link-*-{theme}.svg")):
+        try:
+            ET.parse(btn)
+        except ET.ParseError as e:
+            bad.append(f"{btn.name}: not well-formed — {e}")
+            continue
+        for esc in escapes(btn):
+            bad.append(f"{btn.name}: {esc}")
 
     frame = out / f"card-{theme}-at{a.at}s.svg"
     frame.write_text(shift(svg, a.at))

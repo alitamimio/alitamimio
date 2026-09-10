@@ -15,7 +15,7 @@ If that file is missing the card still builds, just without the year block.
 """
 import json, pathlib
 
-from logos import STACK
+from logos import LINKEDIN, STACK
 
 W = 1000
 PAD = 64
@@ -79,9 +79,32 @@ CYCLE = 14      # one exchange, start to finish, then a long hold before the loo
 
 MARK_COLOUR = False    # True paints the stack marks in their brand colours
 
+# The links row, which cannot live on the card: GitHub serves that image
+# through a proxy as an <img>, so nothing drawn inside it can be clicked. Each
+# link is therefore its own small image, wrapped in an <a> out in the README —
+# which is also the only way to get a hover tooltip anywhere near the card.
+# ("fill" marks are brand paths on a 24 grid; "stroke" ones are drawn here.)
+LINKS = [
+    ("linkedin", "LINKEDIN", "fill", LINKEDIN),
+    ("email", "EMAIL", "stroke", "M2.5 5.5h19v13h-19zM2.5 6.5l9.5 7 9.5-7"),
+    ("build", "HOW IT'S BUILT", "stroke", "M9 7l-5 5 5 5M15 7l5 5-5 5"),
+]
+
 
 def esc(s):
     return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+
+
+def caps_w(s, size, ls=0):
+    """Estimated width of a run of tracked uppercase type.
+
+    There is no way to measure a font here — the card cannot load one, and
+    build.py has no browser — so every box that wraps type derives its width
+    from this instead of carrying a number somebody guessed once. 0.74em is
+    calibrated against the STREAMING pill, whose hardcoded 103px was ~5px too
+    narrow and let the G sit on the border. verify.py checks the result.
+    """
+    return round(len(s) * size * 0.74 + len(s) * ls, 1)
 
 
 def txt(x, y, s, fill, size=16, weight=None, ls=None, family=None, anchor=None):
@@ -132,6 +155,28 @@ def reveal(uid, x, y, s, fill, size, begin, dur, cycle, by="char"):
         f'  <text x="{x}" y="{y}" font-family="{MONO}" font-size="{size}" fill="{fill}" '
         f'clip-path="url(#{uid})">{esc(s)}</text>'
     )
+
+
+def button(c, label, kind, d):
+    """One link, as its own small image in the card's own materials.
+
+    Same inset ground, same hairline, same tracked caps, mark in the accent —
+    so the row under the card reads as part of it rather than as a strip of
+    badges bolted underneath. Width is derived from the label.
+    """
+    h, m = 44, 20
+    w = round(20 + m + 12 + caps_w(label, 12, 1.6) + 20)
+    mark = (f'<path d="{d}" fill="{c["brand"]}"/>' if kind == "fill" else
+            f'<path d="{d}" fill="none" stroke="{c["brand"]}" stroke-width="1.8" '
+            f'stroke-linecap="round" stroke-linejoin="round"/>')
+    return (f'<svg xmlns="http://www.w3.org/2000/svg" width="{w}" height="{h}" '
+            f'viewBox="0 0 {w} {h}" fill="none" font-family="{FONT}">\n'
+            f'  <rect x="0.5" y="0.5" width="{w - 1}" height="{h - 1}" rx="10" '
+            f'fill="{c["inset"]}" stroke="{c["line"]}"/>\n'
+            f'  <svg x="20" y="{(h - m) / 2}" width="{m}" height="{m}" '
+            f'viewBox="0 0 24 24">{mark}</svg>\n'
+            f'{txt(20 + m + 12, h / 2 + 4.5, label, c["ink"], 12, 600, 1.6)}\n'
+            f'</svg>\n')
 
 
 def build(c, stats):
@@ -209,7 +254,7 @@ def build(c, stats):
     tx = px + 22
     for i, label in enumerate(TRACE):
         at = round(0.207 + i * 0.036, 3)
-        tw = 22 + round(7.0 * len(label))
+        tw = caps_w(label, 10, 1.4) + 24
         o.append(f'  <g><rect x="{tx}" y="{py+60}" width="{tw}" height="22" rx="6" fill="none" '
                  f'stroke="{c["brand"]}" stroke-width="1.2" stroke-opacity="0.18">'
                  f'<animate attributeName="stroke-opacity" values="0.18;0.18;1;0.5;0.18;0.18" '
@@ -223,7 +268,7 @@ def build(c, stats):
         tx += tw + 26
 
     # The status pill, lit only while tokens are actually arriving.
-    sw = 103
+    sw = caps_w("STREAMING", 10, 1.4) + 48   # dot, two gaps, and the padding
     sx = px + pw - 22 - sw
     o.append(f'  <g><rect x="{sx}" y="{py+26}" width="{sw}" height="22" rx="11" fill="none" '
              f'stroke="{c["line"]}"/>'
@@ -245,11 +290,15 @@ def build(c, stats):
     o.append(txt(PAD + 2, y + 60, "AI Solutions Engineer", c["ink"], 21, 600))
     o.append(txt(PAD + 2, y + 88, "Full-stack developer. UI/UX. Frontend.", c["muted"], 15.5))
 
-    o.append(f'  <g transform="translate(872 {y - 56})">'
-             f'<circle cx="0" cy="-4" r="4" fill="{c["live"]}">'
+    # Right-aligned to the panel's own edge, not to a number: the old
+    # translate(872) plus a left-anchored label put the type 37px past the
+    # margin every other element on the card respects.
+    lw = caps_w("AMMAN, JO", 11.5, 1.6)
+    o.append(f'  <g transform="translate({W - PAD} {y - 56})">'
+             f'<circle cx="{-lw - 14}" cy="-4" r="4" fill="{c["live"]}">'
              f'<animate attributeName="opacity" values="1;0.35;1" dur="2.8s" repeatCount="indefinite"/>'
-             f'</circle><text x="14" y="0" font-size="11.5" letter-spacing="1.6" font-weight="600" '
-             f'fill="{c["muted"]}">AMMAN, JO</text></g>')
+             f'</circle><text x="0" y="0" text-anchor="end" font-size="11.5" letter-spacing="1.6" '
+             f'font-weight="600" fill="{c["muted"]}">AMMAN, JO</text></g>')
 
     # ---- what I do --------------------------------------------------------
     y += 150
@@ -435,3 +484,8 @@ for name, palette in (("dark", DARK), ("light", LIGHT)):
     loops = svg.count('repeatCount="indefinite"')
     flag = "  <-- over the headless ceiling" if loops > 30 else ""
     print(f"assets/card-{name}.svg  ({out.stat().st_size:,} bytes, {loops} looping){flag}")
+
+    for slug, label, kind, d in LINKS:
+        btn = assets / f"link-{slug}-{name}.svg"
+        btn.write_text(button(palette, label, kind, d))
+        print(f"  {btn.name}  ({btn.stat().st_size:,} bytes)")

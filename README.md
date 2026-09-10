@@ -5,12 +5,23 @@
 </picture>
 
 <!-- The card is one image, and an image served through GitHub's proxy cannot
-     carry links, so they live out here. The portfolio joins this row as soon
-     as it is hosted somewhere. -->
+     carry links, so the row lives out here: one small image per link, each in
+     the card's own materials, each wrapped in an <a> that also carries the
+     hover title. tools/build.py draws them. The portfolio joins this row as
+     soon as it is hosted somewhere. -->
 <p>
-  <a href="https://www.linkedin.com/in/mohammad-ali-al-tamimi">LinkedIn</a> &nbsp;·&nbsp;
-  <a href="mailto:ali.tamimi911@gmail.com">Email</a> &nbsp;·&nbsp;
-  <a href="tools/build.py">How this card is built</a>
+  <a href="https://www.linkedin.com/in/mohammad-ali-al-tamimi" title="Mohammad Ali Al-Tamimi on LinkedIn"><picture>
+    <source media="(prefers-color-scheme: light)" srcset="assets/link-linkedin-light.svg">
+    <img height="44" src="assets/link-linkedin-dark.svg" alt="LinkedIn">
+  </picture></a>
+  <a href="mailto:ali.tamimi911@gmail.com" title="ali.tamimi911@gmail.com"><picture>
+    <source media="(prefers-color-scheme: light)" srcset="assets/link-email-light.svg">
+    <img height="44" src="assets/link-email-dark.svg" alt="Email">
+  </picture></a>
+  <a href="tools/build.py" title="tools/build.py — the script that draws this card"><picture>
+    <source media="(prefers-color-scheme: light)" srcset="assets/link-build-light.svg">
+    <img height="44" src="assets/link-build-dark.svg" alt="How it's built">
+  </picture></a>
 </p>
 
 <picture>
