@@ -15,6 +15,8 @@ If that file is missing the card still builds, just without the year block.
 """
 import json, pathlib
 
+from logos import STACK
+
 W = 1000
 PAD = 64
 FONT = "system-ui,-apple-system,'Segoe UI',Roboto,sans-serif"
@@ -62,6 +64,21 @@ WORK = [
 
 PIPE = [("UI", "Next.js"), ("GATEWAY", "FastAPI"), ("MODEL", "Ollama"), ("DATA", "Postgres")]
 
+# The strip at the top runs one exchange on a loop: the question typed a
+# letter at a time, three tools lighting in turn, then the answer arriving in
+# tokens. The card demonstrates the work instead of describing it, which is
+# also why the two rhythms differ — see reveal().
+ASK = "what do you actually build?"
+TRACE = ["ROUTE", "RETRIEVE", "STREAM"]
+ANSWER = [
+    "Agents that stream, end to end: a FastAPI gateway, SSE to the browser, RAG on Postgres —",
+    "and the interface that makes all of it legible.",
+]
+STRIP_H = 150
+CYCLE = 14      # one exchange, start to finish, then a long hold before the loop
+
+MARK_COLOUR = False    # True paints the stack marks in their brand colours
+
 
 def esc(s):
     return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
@@ -83,24 +100,35 @@ def section(y, label, c):
             f'  <rect x="{x2}" y="{y - 5}" width="{W - PAD - 40 - x2}" height="1" fill="{c["line"]}"/>')
 
 
-def typed(uid, x, y, s, fill, size, begin, cycle):
-    """A line that types itself, then holds for the rest of the cycle.
+def reveal(uid, x, y, s, fill, size, begin, dur, cycle, by="char"):
+    """Reveal a line by stepping a clip, then hold it for the rest of the cycle.
 
-    calcMode="discrete" steps the clip one character at a time, which reads as
-    a typewriter rather than a wipe. The values list is padded with the final
-    width so the sentence sits still for most of the loop instead of
-    retyping every couple of seconds.
+    Two rhythms, and the difference is the whole point of the strip: by="char"
+    is a person at a keyboard, by="word" is a model emitting tokens. People
+    type letters; models do not.
+
+    calcMode="discrete" holds each width until the next keyTime, so it steps
+    rather than wipes. The schedule lives in keyTimes, which keeps the values
+    list to one entry per step — the earlier version padded it out with a few
+    hundred copies of the final width just to fill the wait.
     """
-    n = len(s)
     cw = size * 0.6
-    type_frac = 0.34
-    steps = [round(i * cw, 1) for i in range(n + 1)]
-    hold = max(1, int(len(steps) * (1 - type_frac) / type_frac))
-    vals = ";".join(str(v) for v in steps + [steps[-1]] * hold)
+    if by == "char":
+        widths = [round(i * cw, 1) for i in range(len(s) + 1)]
+    else:
+        widths, run = [0.0], 0
+        for word in s.split(" "):
+            run = min(run + len(word) + 1, len(s))
+            widths.append(round(run * cw, 1))
+    n = max(1, len(widths) - 1)
+    frac = dur / cycle
+    keys = ";".join(str(round(i * frac / n, 5)) for i in range(n + 1)) + ";1"
+    vals = ";".join(str(v) for v in widths + [widths[-1]])
     return (
-        f'  <clipPath id="{uid}"><rect x="{x}" y="{y - size}" height="{size * 1.6}" width="0">'
-        f'<animate attributeName="width" values="{vals}" dur="{cycle}s" begin="{begin}s" '
-        f'calcMode="discrete" repeatCount="indefinite"/></rect></clipPath>\n'
+        f'  <clipPath id="{uid}"><rect x="{x}" y="{y - size}" height="{size * 1.7}" width="0">'
+        f'<animate attributeName="width" values="{vals}" keyTimes="{keys}" '
+        f'dur="{cycle}s" begin="{begin}s" calcMode="discrete" '
+        f'repeatCount="indefinite"/></rect></clipPath>\n'
         f'  <text x="{x}" y="{y}" font-family="{MONO}" font-size="{size}" fill="{fill}" '
         f'clip-path="url(#{uid})">{esc(s)}</text>'
     )
@@ -146,28 +174,75 @@ def build(c, stats):
     o.append('  </g>')
     o.append(f'  <rect x="0.5" y="0.5" width="{W-1}" height="{{HB}}" rx="18" fill="none" stroke="{c["line"]}"/>')
 
-    # ---- terminal strip ---------------------------------------------------
-    o.append(f'  <rect x="{PAD}" y="36" width="{W - PAD*2}" height="96" rx="10" '
+    # ---- the answer strip -------------------------------------------------
+    # Every element here shares CYCLE and repeats indefinitely, so their
+    # relative phases hold forever: each one carries its own begin, and its
+    # keyTimes are read from that begin, not from the page load.
+    px, py, pw = PAD, 36, W - PAD * 2
+    qy, cq, ay = py + 40, 13.5, py + 110
+    o.append(f'  <rect x="{px}" y="{py}" width="{pw}" height="{STRIP_H}" rx="12" '
              f'fill="{c["inset"]}" stroke="{c["line"]}"/>')
-    for i, dot in enumerate(("#ff5f57", "#febc2e", "#28c840")):
-        o.append(f'  <circle cx="{PAD + 22 + i*16}" cy="60" r="4.5" fill="{dot}" opacity="0.75"/>')
-    o.append(typed("t1", PAD + 22, 84, "$ whoami", c["faint"], 13, 0.4, 13))
-    o.append(typed("t2", PAD + 22, 108,
-                   "ai solutions engineer · full stack · ui/ux · frontend",
-                   c["ink"], 13, 1.9, 13))
-    o.append(f'  <rect x="{PAD + 22 + 13*0.6*52 + 3}" y="97" width="7" height="14" fill="{c["brand"]}">'
-             f'<animate attributeName="opacity" values="0;0;1;0;1;0" dur="13s" '
-             f'keyTimes="0;0.15;0.42;0.56;0.70;1" repeatCount="indefinite"/></rect>')
+
+    # The question: a prompt mark, then somebody typing.
+    o.append(f'  <path d="M{px+22} {qy-9} l6 5 l-6 5" stroke="{c["brand"]}" stroke-width="1.8" '
+             f'fill="none" stroke-linecap="round"/>')
+    o.append(reveal("ask", px + 42, qy, ASK, c["muted"], cq, 0.6, 1.9, CYCLE))
+    # The caret rides the text on the same discrete steps, then goes dark at
+    # the moment the question is sent rather than blinking through the answer.
+    cw = cq * 0.6
+    o.append(f'  <rect x="{px+42}" y="{qy-11}" width="7" height="14" fill="{c["brand"]}">'
+             f'<animate attributeName="x" calcMode="discrete" '
+             f'values="{";".join(str(round(px + 44 + i*cw, 1)) for i in range(len(ASK) + 1))};'
+             f'{round(px + 44 + len(ASK)*cw, 1)}" '
+             f'keyTimes="{";".join(str(round(i * (1.9/CYCLE) / len(ASK), 5)) for i in range(len(ASK) + 1))};1" '
+             f'dur="{CYCLE}s" begin="0.6s" repeatCount="indefinite"/>'
+             f'<animate attributeName="opacity" values="1;0;1;0;1;0;0" '
+             f'keyTimes="0;0.025;0.05;0.075;0.1;0.136;1" dur="{CYCLE}s" begin="0.6s" '
+             f'repeatCount="indefinite"/></rect>')
+
+    # The tool trace: three pills lighting in turn, then dimming under the
+    # answer they produced. One animation each, placed by keyTimes, so they
+    # cannot drift out of step with the stream.
+    tx = px + 22
+    for i, label in enumerate(TRACE):
+        at = round(0.207 + i * 0.036, 3)
+        tw = 22 + round(7.0 * len(label))
+        o.append(f'  <g><rect x="{tx}" y="{py+60}" width="{tw}" height="22" rx="6" fill="none" '
+                 f'stroke="{c["brand"]}" stroke-width="1.2" stroke-opacity="0.18">'
+                 f'<animate attributeName="stroke-opacity" values="0.18;0.18;1;0.5;0.18;0.18" '
+                 f'keyTimes="0;{round(at-0.02,3)};{at};{round(at+0.06,3)};0.96;1" '
+                 f'dur="{CYCLE}s" repeatCount="indefinite"/></rect>'
+                 f'<text x="{tx + tw/2}" y="{py+75}" text-anchor="middle" font-size="10" '
+                 f'font-weight="600" letter-spacing="1.4" fill="{c["faint"]}">{label}</text></g>')
+        if i < len(TRACE) - 1:
+            o.append(f'  <path d="M{tx+tw+9} {py+67} l5 4 l-5 4" stroke="{c["faint"]}" '
+                     f'stroke-width="1.4" fill="none"/>')
+        tx += tw + 26
+
+    # The status pill, lit only while tokens are actually arriving.
+    sw = 103
+    sx = px + pw - 22 - sw
+    o.append(f'  <g><rect x="{sx}" y="{py+26}" width="{sw}" height="22" rx="11" fill="none" '
+             f'stroke="{c["line"]}"/>'
+             f'<circle cx="{sx+18}" cy="{py+37}" r="3.5" fill="{c["brand"]}">'
+             f'<animate attributeName="opacity" values="0.15;0.15;1;0.4;1;0.15;0.15" '
+             f'keyTimes="0;0.3;0.36;0.44;0.52;0.6;1" dur="{CYCLE}s" repeatCount="indefinite"/>'
+             f'</circle><text x="{sx+30}" y="{py+41}" font-size="10" font-weight="600" '
+             f'letter-spacing="1.4" fill="{c["faint"]}">STREAMING</text></g>')
+
+    # The answer, in tokens rather than characters.
+    o.append(reveal("a1", px + 22, ay, ANSWER[0], c["ink"], cq, 4.4, 2.6, CYCLE, by="word"))
+    o.append(reveal("a2", px + 22, ay + 22, ANSWER[1], c["ink"], cq, 7.0, 1.4, CYCLE, by="word"))
 
     # ---- identity ---------------------------------------------------------
-    y = 214
+    y = py + STRIP_H + 82
     o.append(f'  <text x="{PAD}" y="{y}" font-size="56" font-weight="700" letter-spacing="7" '
              f'fill="url(#sweep)">ALI TAMIMI</text>')
     o.append(f'  <rect x="{PAD+2}" y="{y+22}" width="300" height="2" rx="1" fill="url(#rule)"/>')
     o.append(txt(PAD + 2, y + 60, "AI Solutions Engineer", c["ink"], 21, 600))
     o.append(txt(PAD + 2, y + 88, "Full-stack developer. UI/UX. Frontend.", c["muted"], 15.5))
 
-    o.append(f'  <g transform="translate(872 158)">'
+    o.append(f'  <g transform="translate(872 {y - 56})">'
              f'<circle cx="0" cy="-4" r="4" fill="{c["live"]}">'
              f'<animate attributeName="opacity" values="1;0.35;1" dur="2.8s" repeatCount="indefinite"/>'
              f'</circle><text x="14" y="0" font-size="11.5" letter-spacing="1.6" font-weight="600" '
@@ -182,6 +257,43 @@ def build(c, stats):
         o.append(txt(PAD + 18, y + 4, label, c["faint"], 11.5, 600, 1.6))
         o.append(txt(PAD + 136, y + 4, detail, c["ink"], 14.5))
         y += 34
+
+    # ---- stack ------------------------------------------------------------
+    # The tech named in WHAT I DO, as marks. Tinted to one ink by default:
+    # twelve brands at full saturation is twelve palettes arguing, and two of
+    # them (Next.js, Ollama) are black, so they vanish on this ground anyway.
+    y += 26
+    o.append(section(y, "STACK", c))
+    y += 34
+    # The row spans exactly as far as the section hairline above it, whatever
+    # the count: the gap is derived, so a thirteenth mark re-spaces the row
+    # instead of pushing it past the margin.
+    tile, mark = 52, 26
+    gap = round((W - PAD - 40 - PAD - len(STACK) * tile) / (len(STACK) - 1), 2)
+    row = 1.6
+    for i, (label, brand_hex, d) in enumerate(STACK):
+        tx = PAD + i * (tile + gap)
+        # Marks arrive left to right on load, once — fill="freeze" rather than
+        # repeatCount="indefinite", so the row costs nothing against the
+        # headless animation ceiling.
+        #
+        # The base opacity is the FINAL state and the animation runs from t=0,
+        # with the stagger carried in keyTimes rather than in begin. Both
+        # halves of that matter: a begin in the future leaves a window where
+        # the base value shows and then snaps away, and a base of 0 means a
+        # renderer that never runs SMIL draws nothing at all.
+        at = round((0.2 + i * 0.055) / row, 4)
+        o.append(f'  <g opacity="1"><rect x="{tx}" y="{y}" width="{tile}" height="{tile}" '
+                 f'rx="12" fill="{c["inset"]}" stroke="{c["line"]}"/>'
+                 f'<svg x="{tx + (tile - mark) / 2}" y="{y + (tile - mark) / 2}" '
+                 f'width="{mark}" height="{mark}" viewBox="0 0 24 24">'
+                 f'<path d="{d}" fill="{brand_hex if MARK_COLOUR else c["ink"]}" '
+                 f'fill-opacity="{1 if MARK_COLOUR else 0.82}"/></svg>'
+                 f'<animate attributeName="opacity" values="0;0;1;1" '
+                 f'keyTimes="0;{at};{round(at + 0.28 / row, 4)};1" dur="{row}s" begin="0s" '
+                 f'fill="freeze" calcMode="spline" '
+                 f'keySplines="0 0 1 1;0.16 1 0.3 1;0 0 1 1"/></g>')
+    y += tile + 4
 
     # ---- work -------------------------------------------------------------
     y += 30
@@ -285,5 +397,12 @@ assets = root.parent / "assets"
 assets.mkdir(exist_ok=True)
 for name, palette in (("dark", DARK), ("light", LIGHT)):
     out = assets / f"card-{name}.svg"
-    out.write_text(build(palette, stats))
-    print(f"assets/card-{name}.svg  ({out.stat().st_size:,} bytes)")
+    svg = build(palette, stats)
+    out.write_text(svg)
+    # Past roughly 35 indefinitely-repeating animations a headless renderer
+    # driven by --virtual-time-budget stops advancing the clock, and the card
+    # screenshots frozen. Counting it here keeps that ceiling visible instead
+    # of turning into an afternoon spent hunting a bug that is not there.
+    loops = svg.count('repeatCount="indefinite"')
+    flag = "  <-- over the headless ceiling" if loops > 30 else ""
+    print(f"assets/card-{name}.svg  ({out.stat().st_size:,} bytes, {loops} looping){flag}")
