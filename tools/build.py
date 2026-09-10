@@ -40,22 +40,28 @@ LIGHT = dict(
 # Ali's own ordering, 2026-09-10: "im an AI solutions engineer first, full
 # stack, UI/UX guru and front end developer". Each role carries its own
 # evidence rather than all of them sharing one flat tech list.
+# Sentences, not keyword lists. These were four rows of dot-separated
+# buzzwords — "design tokens · accessibility · RTL · motion" — which told a
+# reader nothing and read as though nobody had written it. The tech names
+# belong in STACK and under each project, where they are credits rather than
+# a claim; here each role says what the work actually is, in plain words.
 ROLES = [
-    ("AI",         "LLM agents · streaming gateways · RAG · SSE · Ollama"),
-    ("FULL STACK", "FastAPI · Node · PostgreSQL · Redis · Docker · Prometheus"),
-    ("UI/UX",      "design systems · design tokens · accessibility · RTL · motion"),
-    ("FRONTEND",   "Next.js · React · TypeScript · Tailwind · SVG"),
+    ("AI",         "Agents that answer from a company's own documents, and the gateway "
+                   "that streams them"),
+    ("FULL STACK", "The API, the database, the cache and the monitoring underneath it"),
+    ("UI/UX",      "Making it usable — in English, and in Arabic, which reads right to left"),
+    ("FRONTEND",   "The interface itself, and keeping it quick on a phone"),
 ]
 
 WORK = [
     ("KHAYARAK",
-     "Price comparison for the Jordanian market. Arabic and English, full RTL.",
+     "Price comparison for the Jordanian market. The whole site flips for Arabic.",
      "Next.js 16 · Tailwind v4 · TypeScript · Python gateway · streaming answers"),
     ("VOC360",
-     "Fourteen services for public-sector feedback: intake, classification, root cause, BI.",
+     "Fourteen services that take public feedback, sort it, and find what caused it.",
      "FastAPI · PostgreSQL + pgvector · Redis · Docker"),
     ("RASED",
-     "Traffic intelligence on live data. Dashboards and computer-vision supervision.",
+     "Live traffic data, with dashboards and camera feeds a model keeps watch on.",
      "Node · Prometheus · PostgreSQL · Docker"),
     ("FORTILINK",
      "Fortinet integration plugin.",
@@ -70,9 +76,14 @@ PIPE = [("UI", "Next.js"), ("GATEWAY", "FastAPI"), ("MODEL", "Ollama"), ("DATA",
 # also why the two rhythms differ — see reveal().
 ASK = "what do you actually build?"
 TRACE = ["ROUTE", "RETRIEVE", "STREAM"]
+# Written to sound like him answering the question, not like a headline. The
+# first draft — "agents that stream, end to end … the interface that makes all
+# of it legible" — named four technologies and said nothing a person would say
+# out loud. Streaming is described rather than spelled SSE, because the point
+# is what it does for whoever is waiting on the answer.
 ANSWER = [
-    "Agents that stream, end to end: a FastAPI gateway, SSE to the browser, RAG on Postgres —",
-    "and the interface that makes all of it legible.",
+    "I build the whole path — the Python gateway, the model behind it, Postgres",
+    "underneath — and the chat that starts answering before the answer is done.",
 ]
 STRIP_H = 150
 CYCLE = 14      # one exchange, start to finish, then a long hold before the loop
@@ -274,13 +285,13 @@ def build(c, stats):
              f'stroke="{c["line"]}"/>'
              f'<circle cx="{sx+18}" cy="{py+37}" r="3.5" fill="{c["brand"]}">'
              f'<animate attributeName="opacity" values="0.15;0.15;1;0.4;1;0.15;0.15" '
-             f'keyTimes="0;0.3;0.36;0.44;0.52;0.6;1" dur="{CYCLE}s" repeatCount="indefinite"/>'
+             f'keyTimes="0;0.3;0.37;0.47;0.57;0.64;1" dur="{CYCLE}s" repeatCount="indefinite"/>'
              f'</circle><text x="{sx+30}" y="{py+41}" font-size="10" font-weight="600" '
              f'letter-spacing="1.4" fill="{c["faint"]}">STREAMING</text></g>')
 
     # The answer, in tokens rather than characters.
-    o.append(reveal("a1", px + 22, ay, ANSWER[0], c["ink"], cq, 4.4, 2.6, CYCLE, by="word"))
-    o.append(reveal("a2", px + 22, ay + 22, ANSWER[1], c["ink"], cq, 7.0, 1.4, CYCLE, by="word"))
+    o.append(reveal("a1", px + 22, ay, ANSWER[0], c["ink"], cq, 4.4, 2.4, CYCLE, by="word"))
+    o.append(reveal("a2", px + 22, ay + 22, ANSWER[1], c["ink"], cq, 6.8, 2.0, CYCLE, by="word"))
 
     # ---- identity ---------------------------------------------------------
     y = py + STRIP_H + 82
@@ -317,14 +328,21 @@ def build(c, stats):
     y += 26
     o.append(section(y, "STACK", c))
     y += 34
+    # Each mark is named underneath it. Ali asked for the name on hover, and
+    # hover does not exist here: the card is served through GitHub's proxy as
+    # an <img>, so it gets no CSS, no :hover and no tooltip of its own — and
+    # on a phone there is no pointer to hover with anyway. A label that is
+    # always there answers the same question for everyone.
+    #
     # The row spans exactly as far as the section hairline above it, whatever
-    # the count: the gap is derived, so a thirteenth mark re-spaces the row
-    # instead of pushing it past the margin.
-    tile, mark = 52, 26
-    gap = round((W - PAD - 40 - PAD - len(STACK) * tile) / (len(STACK) - 1), 2)
+    # the count: the cell width is derived, so a thirteenth mark re-spaces the
+    # row instead of pushing it past the margin.
+    tile, mark, lab = 44, 24, 8.5
+    cell = (W - PAD - 40 - PAD) / len(STACK)
     row = 1.6
     for i, (label, brand_hex, d) in enumerate(STACK):
-        tx = PAD + i * (tile + gap)
+        mid = PAD + cell * i + cell / 2
+        tx = round(mid - tile / 2, 1)
         # Marks arrive left to right on load, once — fill="freeze" rather than
         # repeatCount="indefinite", so the row costs nothing against the
         # headless animation ceiling.
@@ -335,17 +353,23 @@ def build(c, stats):
         # the base value shows and then snaps away, and a base of 0 means a
         # renderer that never runs SMIL draws nothing at all.
         at = round((0.2 + i * 0.055) / row, 4)
+        fade = (f'<animate attributeName="opacity" values="0;0;1;1" '
+                f'keyTimes="0;{at};{round(at + 0.28 / row, 4)};1" dur="{row}s" begin="0s" '
+                f'fill="freeze" calcMode="spline" '
+                f'keySplines="0 0 1 1;0.16 1 0.3 1;0 0 1 1"/>')
         o.append(f'  <g opacity="1"><rect x="{tx}" y="{y}" width="{tile}" height="{tile}" '
-                 f'rx="12" fill="{c["inset"]}" stroke="{c["line"]}"/>'
+                 f'rx="11" fill="{c["inset"]}" stroke="{c["line"]}"/>'
                  f'<svg x="{tx + (tile - mark) / 2}" y="{y + (tile - mark) / 2}" '
                  f'width="{mark}" height="{mark}" viewBox="0 0 24 24">'
                  f'<path d="{d}" fill="{brand_hex if MARK_COLOUR else c["ink"]}" '
-                 f'fill-opacity="{1 if MARK_COLOUR else 0.82}"/></svg>'
-                 f'<animate attributeName="opacity" values="0;0;1;1" '
-                 f'keyTimes="0;{at};{round(at + 0.28 / row, 4)};1" dur="{row}s" begin="0s" '
-                 f'fill="freeze" calcMode="spline" '
-                 f'keySplines="0 0 1 1;0.16 1 0.3 1;0 0 1 1"/></g>')
-    y += tile + 25
+                 f'fill-opacity="{1 if MARK_COLOUR else 0.82}"/></svg>{fade}</g>')
+        # The name sits in its own group, not in the tile's: it is wider than
+        # the tile by design, and verify.py reads a rect with text beside it as
+        # a chip whose type has escaped its box.
+        o.append(f'  <g opacity="1">'
+                 f'{txt(round(mid, 1), y + tile + 16, label.upper(), c["faint"], lab, 600, anchor="middle")}'
+                 f'{fade}</g>')
+    y += tile + 40
 
     # ---- work -------------------------------------------------------------
     y += 30
