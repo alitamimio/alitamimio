@@ -5,9 +5,10 @@
 </picture>
 
 <!-- The card is one image, and an image served through GitHub's proxy cannot
-     carry links, so they live out here. LinkedIn and the portfolio go in this
-     same row the moment there are URLs for them. -->
+     carry links, so they live out here. The portfolio joins this row as soon
+     as it is hosted somewhere. -->
 <p>
+  <a href="https://www.linkedin.com/in/mohammad-ali-al-tamimi">LinkedIn</a> &nbsp;·&nbsp;
   <a href="mailto:ali.tamimi911@gmail.com">Email</a> &nbsp;·&nbsp;
   <a href="tools/build.py">How this card is built</a>
 </p>
