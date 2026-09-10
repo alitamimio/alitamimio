@@ -296,7 +296,7 @@ def build(c, stats):
                  f'keyTimes="0;{at};{round(at + 0.28 / row, 4)};1" dur="{row}s" begin="0s" '
                  f'fill="freeze" calcMode="spline" '
                  f'keySplines="0 0 1 1;0.16 1 0.3 1;0 0 1 1"/></g>')
-    y += tile + 4
+    y += tile + 25
 
     # ---- work -------------------------------------------------------------
     y += 30
@@ -319,6 +319,18 @@ def build(c, stats):
         o.append(f'  <path d="M{xs[i]+bw} {cy} H{xs[i+1]}" stroke="{c["line"]}" stroke-width="1.5"/>')
         o.append(f'  <path d="M{xs[i+1]-9} {cy-4} l5 4 l-5 4" stroke="{c["faint"]}" '
                  f'stroke-width="1.4" fill="none"/>')
+    # The request, as a beam with a tail rather than a dot: it reads as
+    # something travelling in a direction, which a circle does not. Drawn
+    # BEFORE the nodes, so their opaque fill hides it — the beam shows in the
+    # gaps and passes behind each box, instead of sliding across the labels.
+    o.append(f'  <g><rect x="-30" y="-2" width="30" height="4" rx="2" fill="url(#beam)"/>'
+             f'<circle r="4.5" fill="{c["sweep"]}"/>'
+             f'<animateMotion dur="6s" repeatCount="indefinite" keyPoints="0;0;1;1" '
+             f'keyTimes="0;0.06;0.62;1" calcMode="linear" '
+             f'path="M{xs[0]+bw/2} {cy} H{xs[3]+bw/2}"/>'
+             f'<animate attributeName="opacity" values="0;1;1;0;0" '
+             f'keyTimes="0;0.07;0.6;0.64;1" dur="6s" repeatCount="indefinite"/></g>')
+
     for i, (top, sub) in enumerate(PIPE):
         # Each node brightens as the request reaches it. One 6s animation per
         # node with the spike placed by keyTimes, so the glows stay locked to
@@ -335,17 +347,7 @@ def build(c, stats):
                  f'font-weight="600" letter-spacing="1.6" fill="{c["ink"]}">{top}</text>'
                  f'<text x="{xs[i]+bw/2}" y="{y+40}" text-anchor="middle" font-size="12" '
                  f'fill="{c["faint"]}">{sub}</text></g>')
-    # The request, as a beam with a tail rather than a dot: it reads as
-    # something travelling in a direction, which a circle does not.
-    o.append(f'  <g><rect x="-30" y="-2" width="30" height="4" rx="2" fill="url(#beam)"/>'
-             f'<circle r="4.5" fill="{c["sweep"]}"/>'
-             f'<animateMotion dur="6s" repeatCount="indefinite" keyPoints="0;0;1;1" '
-             f'keyTimes="0;0.06;0.62;1" calcMode="linear" '
-             f'path="M{xs[0]+bw/2} {cy} H{xs[3]+bw/2}"/>'
-             f'<animate attributeName="opacity" values="0;1;1;0;0" '
-             f'keyTimes="0;0.07;0.6;0.64;1" dur="6s" repeatCount="indefinite"/></g>')
-
-    # And the answer coming back, which is the half the old version left out.
+    # The answer coming back, which is the half the old version left out.
     # The response does not retrace the request; it runs its own lane under
     # the row, dashed, and arrives as separate tokens rather than one object.
     ret = round(y + bh + 24)
