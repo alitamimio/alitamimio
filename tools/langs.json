@@ -1,0 +1,17 @@
+{
+  "as_of": "2026-09-11",
+  "repos": 5,
+  "bytes": {
+    "TypeScript": 3250393,
+    "Python": 2565578,
+    "JavaScript": 558625,
+    "HTML": 184403,
+    "CSS": 183328,
+    "Shell": 14222,
+    "Mermaid": 10206,
+    "PowerShell": 9439,
+    "Dockerfile": 8024,
+    "PLpgSQL": 6809,
+    "Batchfile": 71
+  }
+}

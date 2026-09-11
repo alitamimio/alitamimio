@@ -65,9 +65,18 @@ for _, n in reversed(days):
     elif streak:
         break
 
+# The card shows the longest streak of the year rather than the current one.
+# A current streak on a public card only ever has bad news to deliver: the
+# first week off, it reads "1 day streak". The longest only goes up.
+best = run = 0
+for _, n in days:
+    run = run + 1 if n > 0 else 0
+    best = max(best, run)
+
 stats = {
     "total": sum(n for _, n in days),
     "streak": streak,
+    "best_streak": best,
     "active_days": sum(1 for _, n in days if n > 0),
     "recent": [n for _, n in days[-21:]],
     "through": days[-1][0],
