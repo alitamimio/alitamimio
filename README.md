@@ -1,7 +1,7 @@
 <picture>
   <source media="(prefers-color-scheme: dark)"  srcset="assets/card-dark.svg">
   <source media="(prefers-color-scheme: light)" srcset="assets/card-light.svg">
-  <img src="assets/card-dark.svg" width="100%" alt="A question typed at the top of the card, what do you actually build?, routed through three tools, route then retrieve then stream, and answered a word at a time: I build the whole path, the Python gateway, the model behind it, Postgres underneath, and the chat that starts answering before the answer is done. Ali Tamimi. AI Solutions Engineer. Full-stack developer, UI/UX, frontend. Amman, Jordan. What I do: AI, agents that answer from a company's own documents, and the gateway that streams them. Full stack, the API, the database, the cache and the monitoring underneath it. UI/UX, making it usable in English and in Arabic, which reads right to left. Frontend, the interface itself, and keeping it quick on a phone. Stack: Python, FastAPI, Ollama, PostgreSQL, Redis, Docker, Prometheus, Node.js, TypeScript, React, Next.js and Tailwind, each mark named beneath it. Work: Khayarak, price comparison for the Jordanian market, where the whole site flips for Arabic, built with Next.js 16, Tailwind v4, TypeScript and a Python gateway with streaming answers. VOC360, fourteen services that take public feedback, sort it and find what caused it, built with FastAPI, PostgreSQL with pgvector, Redis and Docker. Rased, live traffic data with dashboards and camera feeds a model keeps watch on, built with Node, Prometheus, PostgreSQL and Docker. FortiLink, a Fortinet integration plugin in TypeScript. How it fits: UI in Next.js to a FastAPI gateway to an Ollama model to Postgres, with the tokens streaming back over SSE. Contribution figures for the year are shown on the card and refreshed nightly, nearly all of the work being in private and organisation repos.">
+  <img src="assets/card-dark.svg" width="100%" alt="A question typed at the top of the card, what do you build, end to end?, routed through four tools, route, retrieve, stream, render, and answered a letter at a time: the full path, a FastAPI gateway, a local model, Postgres underneath, and a Next.js interface that renders every token the moment it arrives. Ali Tamimi. AI Solutions Engineer. Full-stack engineer specialising in UI/UX and frontend architecture. 9XAI Fellow, Al Hussein Technical University. What I do: AI, retrieval-grounded agents over enterprise document sets, served through a streaming gateway. UI/UX, design systems, accessible component libraries, and bilingual product localisation. Frontend, Next.js architecture, complete application states, command palettes, responsive layouts. Full stack, API design, relational data modelling, caching, and production observability. Stack, interface: TypeScript, React, Next.js, Tailwind, shadcn/ui, Radix, Framer Motion, Vite. Systems: Python, FastAPI, Ollama, PostgreSQL, Redis, Docker, Prometheus, Node.js. Selected work: Khayarak, a price-comparison platform for the Jordanian market, fully localised for Arabic and English, in Next.js 16, Tailwind v4, TypeScript and a Python gateway. FortiLink, a Fortinet integration console with an interactive tool catalog, command palette and accessible dialog system, in TypeScript, shadcn/ui, Radix, Framer Motion and Tailwind v4. Rased, real-time traffic intelligence with live dashboards and model-monitored camera feeds, in Node, Prometheus, PostgreSQL and Docker. VOC360, a fourteen-service platform that ingests public feedback, classifies it, and traces each issue to its root cause, in FastAPI, PostgreSQL with pgvector, Redis and Docker. Architecture: the request travels UI to gateway to retrieval to model, Next.js, FastAPI, pgvector, Ollama, with response tokens streamed back over SSE; the platform beneath is PostgreSQL, Redis, Docker and Prometheus; the interface layer takes each token through a stream client, application state, components and render. This year: contribution count, longest daily streak and active days from the public calendar, and a language bar showing TypeScript as the largest share of everything written, across public and private repositories.">
 </picture>
 
 <!-- The card is one image, and an image served through GitHub's proxy cannot
@@ -18,11 +18,24 @@
     <source media="(prefers-color-scheme: light)" srcset="assets/link-email-light.svg">
     <img height="44" src="assets/link-email-dark.svg" alt="Email">
   </picture></a>
-  <a href="tools/build.py" title="tools/build.py — the script that draws this card"><picture>
+  <a href="https://x.com/alitamimio" title="@alitamimio on X"><picture>
+    <source media="(prefers-color-scheme: light)" srcset="assets/link-x-light.svg">
+    <img height="44" src="assets/link-x-dark.svg" alt="X">
+  </picture></a>
+  <a href="tools/build.py" title="tools/build.py, the script that draws this card"><picture>
     <source media="(prefers-color-scheme: light)" srcset="assets/link-build-light.svg">
     <img height="44" src="assets/link-build-dark.svg" alt="How it's built">
   </picture></a>
 </p>
+
+<!-- The card is an image, and search engines and assistive technology read
+     text. This is the same content, as text. -->
+
+**Ali Tamimi** · AI Solutions Engineer · Amman, Jordan
+
+Full-stack engineer specialising in UI/UX and frontend architecture. Retrieval-grounded agents served through streaming FastAPI gateways; Next.js interfaces built on design systems, accessible component libraries, and Arabic and English localisation; PostgreSQL, Redis, Docker and Prometheus underneath. 9XAI Fellow, Al Hussein Technical University.
+
+Selected work: Khayarak, a price-comparison platform for the Jordanian market. FortiLink, a Fortinet integration console. Rased, real-time traffic intelligence. VOC360, a fourteen-service public-feedback platform. Client and private repositories; walkthroughs on request.
 
 <picture>
   <source media="(prefers-color-scheme: dark)"  srcset="https://raw.githubusercontent.com/alitamimio/alitamimio/output/snake-dark.svg">
