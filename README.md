@@ -9,7 +9,7 @@
      the card's own materials, each wrapped in an <a> that also carries the
      hover title. tools/build.py draws them. The portfolio joins this row as
      soon as it is hosted somewhere. -->
-<p>
+<p align="center">
   <a href="https://www.linkedin.com/in/mohammad-ali-al-tamimi" title="Mohammad Ali Al-Tamimi on LinkedIn"><picture><source media="(prefers-color-scheme: light)" srcset="assets/link-linkedin-light.svg"><img height="44" src="assets/link-linkedin-dark.svg" alt="LinkedIn"></picture></a>
   <a href="mailto:ali.tamimi911@gmail.com" title="ali.tamimi911@gmail.com"><picture><source media="(prefers-color-scheme: light)" srcset="assets/link-email-light.svg"><img height="44" src="assets/link-email-dark.svg" alt="Email"></picture></a>
   <a href="https://x.com/alitamimio" title="@alitamimio on X"><picture><source media="(prefers-color-scheme: light)" srcset="assets/link-x-light.svg"><img height="44" src="assets/link-x-dark.svg" alt="X"></picture></a>
