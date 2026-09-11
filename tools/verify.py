@@ -20,12 +20,30 @@ verify the motion without watching it in a real browser.
 
 Usage:  python3 tools/verify.py [--at 6.0] [--out DIR]
 """
-import argparse, pathlib, re, subprocess, sys, xml.etree.ElementTree as ET
+import argparse, os, pathlib, re, shutil, subprocess, sys, xml.etree.ElementTree as ET
 
 W = 1000
 CEILING = 35
 MARGIN = 16
-CHROME = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+
+
+def chrome():
+    """The browser that shoots the card.
+
+    Was a hardcoded macOS path, which meant the gate could only run on Ali's
+    machine and the nightly job rebuilt and pushed the card with no check at
+    all. The Actions runner has google-chrome on PATH; CHROME overrides.
+    """
+    for cand in (os.environ.get("CHROME"),
+                 "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+                 shutil.which("google-chrome"), shutil.which("google-chrome-stable"),
+                 shutil.which("chromium-browser"), shutil.which("chromium")):
+        if cand and pathlib.Path(cand).exists():
+            return cand
+    sys.exit("no Chrome or Chromium found; set CHROME=/path/to/binary")
+
+
+CHROME = chrome()
 NS = "{http://www.w3.org/2000/svg}"
 ANIM = re.compile(r'<(animate|animateTransform|animateMotion)\b[^>]*/>')
 BEGIN = re.compile(r'begin="(-?[\d.]+)s"')
