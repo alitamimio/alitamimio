@@ -10,32 +10,11 @@
      hover title. tools/build.py draws them. The portfolio joins this row as
      soon as it is hosted somewhere. -->
 <p>
-  <a href="https://www.linkedin.com/in/mohammad-ali-al-tamimi" title="Mohammad Ali Al-Tamimi on LinkedIn"><picture>
-    <source media="(prefers-color-scheme: light)" srcset="assets/link-linkedin-light.svg">
-    <img height="44" src="assets/link-linkedin-dark.svg" alt="LinkedIn">
-  </picture></a>
-  <a href="mailto:ali.tamimi911@gmail.com" title="ali.tamimi911@gmail.com"><picture>
-    <source media="(prefers-color-scheme: light)" srcset="assets/link-email-light.svg">
-    <img height="44" src="assets/link-email-dark.svg" alt="Email">
-  </picture></a>
-  <a href="https://x.com/alitamimio" title="@alitamimio on X"><picture>
-    <source media="(prefers-color-scheme: light)" srcset="assets/link-x-light.svg">
-    <img height="44" src="assets/link-x-dark.svg" alt="X">
-  </picture></a>
-  <a href="tools/build.py" title="tools/build.py, the script that draws this card"><picture>
-    <source media="(prefers-color-scheme: light)" srcset="assets/link-build-light.svg">
-    <img height="44" src="assets/link-build-dark.svg" alt="How it's built">
-  </picture></a>
+  <a href="https://www.linkedin.com/in/mohammad-ali-al-tamimi" title="Mohammad Ali Al-Tamimi on LinkedIn"><picture><source media="(prefers-color-scheme: light)" srcset="assets/link-linkedin-light.svg"><img height="44" src="assets/link-linkedin-dark.svg" alt="LinkedIn"></picture></a>
+  <a href="mailto:ali.tamimi911@gmail.com" title="ali.tamimi911@gmail.com"><picture><source media="(prefers-color-scheme: light)" srcset="assets/link-email-light.svg"><img height="44" src="assets/link-email-dark.svg" alt="Email"></picture></a>
+  <a href="https://x.com/alitamimio" title="@alitamimio on X"><picture><source media="(prefers-color-scheme: light)" srcset="assets/link-x-light.svg"><img height="44" src="assets/link-x-dark.svg" alt="X"></picture></a>
+  <a href="tools/build.py" title="tools/build.py, the script that draws this card"><picture><source media="(prefers-color-scheme: light)" srcset="assets/link-build-light.svg"><img height="44" src="assets/link-build-dark.svg" alt="How it's built"></picture></a>
 </p>
-
-<!-- The card is an image, and search engines and assistive technology read
-     text. This is the same content, as text. -->
-
-**Ali Tamimi** · AI Solutions Engineer · Amman, Jordan
-
-Full-stack engineer specialising in UI/UX and frontend architecture. Retrieval-grounded agents served through streaming FastAPI gateways; Next.js interfaces built on design systems, accessible component libraries, and Arabic and English localisation; PostgreSQL, Redis, Docker and Prometheus underneath. 9XAI Fellow, Al Hussein Technical University.
-
-Selected work: Khayarak, a price-comparison platform for the Jordanian market. FortiLink, a Fortinet integration console. Rased, real-time traffic intelligence. VOC360, a fourteen-service public-feedback platform. Client and private repositories; walkthroughs on request.
 
 <picture>
   <source media="(prefers-color-scheme: dark)"  srcset="https://raw.githubusercontent.com/alitamimio/alitamimio/output/snake-dark.svg">
