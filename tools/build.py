@@ -408,32 +408,30 @@ def build(c, stats, langs, shots):
     y += 22
     o.append(section(y, "SELECTED WORK", c))
     y += 36
-    tw, th, tgap = 296, 104, 28
-    for i, (name, what, tech) in enumerate(WORK[:FEATURED]):
-        pic = shots.get(name)
-        if pic:
-            shot(o, PAD, y, tw, th, pic, c, f"shot{i}")
-            tx0, tw0 = PAD + tw + tgap, CONTENT - tw - tgap
-        else:
-            tx0, tw0 = PAD, CONTENT
-        o.append(txt(tx0, y + 14, name, c["brand"], 14, 700, 1.4))
-        ly = y + 38
-        for line in wrap(what, 14, tw0):
-            o.append(txt(tx0, ly, line, c["ink"], 14))
-            ly += 19
-        o.append(txt(tx0, ly + 4, tech, c["faint"], 12))
-        y = y + th + 26 if pic else ly + 34
-    # The rest, compact, in the same label column WHAT I DO uses.
-    y += 6
-    for name, what, tech in WORK[FEATURED:]:
-        o.append(txt(PAD, y, name, c["brand"], 12.5, 700, 1.4))
-        ly = y
-        for line in wrap(what, 13.5, CONTENT - 136):
-            o.append(txt(PAD + 136, ly, line, c["ink"], 13.5))
-            ly += 18
-        o.append(txt(PAD + 136, ly + 1, tech, c["faint"], 11.5))
-        y = ly + 34
-    y += 30
+    # Two columns the whole way down. The first two carry their landing page
+    # above the words; the rest sit in the same grid without one, so the
+    # section reads as one thing rather than a feature strip and a list.
+    # Each row is as tall as its tallest card, so the next row starts level.
+    colw = round((CONTENT - 40) / 2)
+    imgh = round(colw / 1.6)          # the screenshots' own aspect, uncropped
+    for r in range(0, len(WORK), 2):
+        top, tallest = y, 0
+        for col, (name, what, tech) in enumerate(WORK[r:r + 2]):
+            cx = PAD + col * (colw + 40)
+            cy = top
+            pic = shots.get(name)
+            if pic:
+                shot(o, cx, cy, colw, imgh, pic, c, f"shot{r}{col}")
+                cy += imgh + 18
+            o.append(txt(cx, cy + 12, name, c["brand"], 14, 700, 1.4))
+            ly = cy + 36
+            for line in wrap(what, 14, colw):
+                o.append(txt(cx, ly, line, c["ink"], 14))
+                ly += 19
+            o.append(txt(cx, ly + 4, tech, c["faint"], 12))
+            tallest = max(tallest, ly + 4 - top)
+        y = top + tallest + 44
+    y += 10
 
     # ---- architecture -----------------------------------------------------
     o.append(section(y, "ARCHITECTURE", c))
