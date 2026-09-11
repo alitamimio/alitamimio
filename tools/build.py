@@ -52,19 +52,23 @@ LIGHT = dict(
 ROLES = [
     ("AI",         "Retrieval-grounded agents over enterprise document sets, served "
                    "through a streaming gateway"),
-    ("UI/UX",      "Design systems, accessible component libraries, and bilingual "
-                   "product localisation"),
-    ("FRONTEND",   "Next.js architecture: complete application states, command "
-                   "palettes, responsive layouts"),
+    ("UI/UX",      "Design systems, accessible component libraries, and every "
+                   "state an interface can be in"),
+    ("FRONTEND",   "Next.js architecture: routing, data fetching, command palettes, "
+                   "responsive layouts"),
     ("FULL STACK", "API design, relational data modelling, caching, and production "
                    "observability"),
 ]
 
-# The first FEATURED carry an image beside the text, when one exists in
-# assets/shots/<name>.png; the rest are text. Rased and VOC360 may not be
-# shown, so they stay in the text list whatever lands in that folder.
+# The first FEATURED carry their landing page above the text, when one exists
+# in assets/shots/<name>.jpg; the rest are text in the same grid. Rased and
+# VOC360 may not be shown, so they stay last whatever lands in that folder.
+#
+# Nothing here sells Arabic or RTL as an achievement. Ali's note, 2026-09-11:
+# shipping both languages is the bare minimum, and naming it as a credential
+# reads as though it were hard.
 WORK = [
-    ("KHAYARAK", "Price-comparison platform for the Jordanian market, fully localised for Arabic and English.",
+    ("KHAYARAK", "Price-comparison platform for the Jordanian market: live shop data, price alerts, and a chat that answers from both.",
      "Next.js 16 · Tailwind v4 · TypeScript · Python gateway"),
     ("FORTILINK", "Fortinet integration console: interactive tool catalog, command palette, and an accessible dialog system.",
      "TypeScript · shadcn/ui · Radix · Framer Motion · Tailwind v4"),

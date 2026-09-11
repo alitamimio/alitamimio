@@ -13,7 +13,7 @@ beneath it. GitHub allows 160 characters. Pick one.
 | | Bio | Chars |
 |---|---|---|
 | 1 | AI Solutions Engineer. Full-stack, specialising in UI/UX and frontend architecture: retrieval-grounded agents, streaming gateways, Next.js interfaces. | 151 |
-| 2 | AI Solutions Engineer, full-stack. Design systems, accessible Next.js interfaces, Arabic and English localisation; FastAPI and PostgreSQL behind them. | 152 |
+| 2 | AI Solutions Engineer, full-stack. Design systems, accessible Next.js interfaces, and the state management behind them; FastAPI and PostgreSQL underneath. | 155 |
 | 3 | AI Solutions Engineer building the whole path: FastAPI gateways, local models, Postgres, and the Next.js interface that streams the answer. UI/UX first. | 154 |
 
 Recommendation: 1. It leads with the title, names the specialisation in the
