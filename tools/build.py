@@ -416,6 +416,8 @@ def build(c, stats, langs, shots):
     # above the words; the rest sit in the same grid without one, so the
     # section reads as one thing rather than a feature strip and a list.
     # Each row is as tall as its tallest card, so the next row starts level.
+    # Every card's type is centred in its column, including the two without
+    # an image, so both rows read as the same grid.
     colw = round((CONTENT - 40) / 2)
     imgh = round(colw / 1.6)          # the screenshots' own aspect, uncropped
     for r in range(0, len(WORK), 2):
@@ -427,12 +429,19 @@ def build(c, stats, langs, shots):
             if pic:
                 shot(o, cx, cy, colw, imgh, pic, c, f"shot{r}{col}")
                 cy += imgh + 18
-            o.append(txt(cx, cy + 12, name, c["brand"], 14, 700, 1.4))
+            mid = round(cx + colw / 2, 1)
+            # Centred in the column, under the image rather than flush with
+            # its left edge. text-anchor="middle" centres the advance width,
+            # and SVG letter-spacing adds a gap after the last glyph as well
+            # as between them, so a tracked run lands ls/2 right of centre.
+            # Only the name is tracked, so only the name is pulled back.
+            o.append(txt(round(mid - 0.7, 1), cy + 12, name, c["brand"], 14, 700, 1.4,
+                         anchor="middle"))
             ly = cy + 36
             for line in wrap(what, 14, colw):
-                o.append(txt(cx, ly, line, c["ink"], 14))
+                o.append(txt(mid, ly, line, c["ink"], 14, anchor="middle"))
                 ly += 19
-            o.append(txt(cx, ly + 4, tech, c["faint"], 12))
+            o.append(txt(mid, ly + 4, tech, c["faint"], 12, anchor="middle"))
             tallest = max(tallest, ly + 4 - top)
         y = top + tallest + 44
     y += 10
