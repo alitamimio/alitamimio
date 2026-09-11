@@ -505,11 +505,7 @@ def build(c, stats, langs, shots):
             x = PAD + i * 230
             o.append(txt(x, y, big, c["ink"], 27, 700))
             o.append(txt(x + 13 + 17 * len(big), y, small, c["muted"], 14))
-        # The date the calendar was read. If the nightly refresh stops working
-        # this is where it shows, to Ali, as a date that stops moving.
-        o.append(txt(PAD, y + 26, 'The majority of this work lives in private and organisation '
-                     f'repositories. Read {stats["through"]}.', c["faint"], 13))
-        y += 56
+        y += 34
 
         # The language bar. TypeScript is the largest share of everything
         # written, which is the frontend claim made as a fact rather than a
