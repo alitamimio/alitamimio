@@ -74,7 +74,6 @@ WORK = [
      "FastAPI · PostgreSQL + pgvector · Redis · Docker"),
 ]
 FEATURED = 2
-WORK_NOTE = "Client and private repositories; detailed walkthroughs available on request."
 
 # The request path, the platform it runs on, and what the client does with
 # every token that comes back. Each row says something the others do not.
@@ -434,8 +433,7 @@ def build(c, stats, langs, shots):
             ly += 18
         o.append(txt(PAD + 136, ly + 1, tech, c["faint"], 11.5))
         y = ly + 34
-    o.append(txt(PAD, y - 6, WORK_NOTE, c["faint"], 12))
-    y += 52
+    y += 30
 
     # ---- architecture -----------------------------------------------------
     o.append(section(y, "ARCHITECTURE", c))
@@ -510,7 +508,7 @@ def build(c, stats, langs, shots):
         # The date the calendar was read. If the nightly refresh stops working
         # this is where it shows, to Ali, as a date that stops moving.
         o.append(txt(PAD, y + 26, 'The majority of this work lives in private and organisation '
-                     f'repositories. Calendar read {stats["through"]}.', c["faint"], 13))
+                     f'repositories. Read {stats["through"]}.', c["faint"], 13))
         y += 56
 
         # The language bar. TypeScript is the largest share of everything
@@ -544,9 +542,7 @@ def build(c, stats, langs, shots):
                 o.append(txt(lx + 14, y + 32, f"{name} {pct:.0f}%",
                              c["ink"] if i < 2 else c["faint"], 12, 600 if i < 2 else None))
                 lx += 26 + len(f"{name} {pct:.0f}%") * 7.1
-            o.append(txt(PAD, y + 54, "Language share by volume across public and private "
-                         f"repositories, as of {langs['as_of']}.", c["faint"], 11.5))
-            y += 76
+            y += 50
 
     height = y + 26
     o.append('</svg>')
