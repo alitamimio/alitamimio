@@ -52,6 +52,10 @@ tips = dict(re.findall(
 
 if not cells:
     sys.exit("could not parse the contributions calendar; markup may have changed")
+if not tips:
+    # The day cells parsed but not one count did. Without this the card would
+    # rebuild with every figure at zero and look, for all the world, correct.
+    sys.exit("found the calendar but not a single count; the tooltip markup may have changed")
 
 days = sorted((date, 0 if tips.get(cid, "No") == "No" else int(tips[cid].replace(",", "")))
               for cid, date in cells.items())
@@ -65,13 +69,25 @@ for _, n in reversed(days):
     elif streak:
         break
 
+# The card shows the longest streak of the year rather than the current one.
+# A current streak on a public card only ever has bad news to deliver: the
+# first week off, it reads "1 day streak". The longest only goes up.
+best = run = 0
+for _, n in days:
+    run = run + 1 if n > 0 else 0
+    best = max(best, run)
+
 stats = {
     "total": sum(n for _, n in days),
     "streak": streak,
+    "best_streak": best,
     "active_days": sum(1 for _, n in days if n > 0),
     "recent": [n for _, n in days[-21:]],
     "through": days[-1][0],
 }
+
+if stats["total"] == 0:
+    sys.exit("parsed a year with zero contributions, which is not this account; refusing to write it")
 
 out = pathlib.Path(__file__).resolve().parent / "stats.json"
 out.write_text(json.dumps(stats, indent=2) + "\n")

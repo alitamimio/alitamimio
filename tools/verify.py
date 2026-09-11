@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """The card's audit gate: prove it is sound, then shoot it mid-motion.
 
-Four checks and a screenshot:
+Five checks and a screenshot:
 
   1. Both themes parse as XML, and so does every link button.
   2. The number of indefinitely-repeating animations stays under the ceiling a
@@ -10,6 +10,8 @@ Four checks and a screenshot:
      sentence in build.py's copy causes every time.
   4. No <text> escapes the box drawn around it. Ali caught the STREAMING pill
      doing exactly that, five pixels of it, so the check exists now.
+  5. The layout hash matches tools/layout.sha256 (see tools/snapshot.py), so a
+     refactor cannot move a section unseen.
 
 Then it shoots both themes with every `begin` shifted negative. A headless
 screenshot driven by --virtual-time-budget stops advancing the clock on a
@@ -20,12 +22,30 @@ verify the motion without watching it in a real browser.
 
 Usage:  python3 tools/verify.py [--at 6.0] [--out DIR]
 """
-import argparse, pathlib, re, subprocess, sys, xml.etree.ElementTree as ET
+import argparse, os, pathlib, re, shutil, subprocess, sys, xml.etree.ElementTree as ET
 
 W = 1000
 CEILING = 35
 MARGIN = 16
-CHROME = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+
+
+def chrome():
+    """The browser that shoots the card.
+
+    Was a hardcoded macOS path, which meant the gate could only run on Ali's
+    machine and the nightly job rebuilt and pushed the card with no check at
+    all. The Actions runner has google-chrome on PATH; CHROME overrides.
+    """
+    for cand in (os.environ.get("CHROME"),
+                 "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+                 shutil.which("google-chrome"), shutil.which("google-chrome-stable"),
+                 shutil.which("chromium-browser"), shutil.which("chromium")):
+        if cand and pathlib.Path(cand).exists():
+            return cand
+    sys.exit("no Chrome or Chromium found; set CHROME=/path/to/binary")
+
+
+CHROME = chrome()
 NS = "{http://www.w3.org/2000/svg}"
 ANIM = re.compile(r'<(animate|animateTransform|animateMotion)\b[^>]*/>')
 BEGIN = re.compile(r'begin="(-?[\d.]+)s"')
@@ -186,6 +206,15 @@ for theme in ("dark", "light"):
 
     print(f"{theme:5}  {height}px tall  {loops} looping  "
           f"widest text {overflow(svg_path)[0][0]}px  ->  {png if ok else 'no shot'}")
+
+# 5. The layout has not moved. tools/snapshot.py builds the card without its
+#    live figures and compares the hash to the pinned one; a refactor that
+#    shifts a section passes every check above and fails this one.
+snap = subprocess.run([sys.executable, str(root / "tools" / "snapshot.py")],
+                      capture_output=True, text=True)
+print(snap.stdout.strip() or snap.stderr.strip())
+if snap.returncode:
+    bad.append(snap.stderr.strip() or snap.stdout.strip())
 
 if bad:
     print("\nFAIL")

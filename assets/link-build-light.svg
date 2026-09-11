@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="219" height="44" viewBox="0 0 219 44" fill="none" font-family="system-ui,-apple-system,'Segoe UI',Roboto,sans-serif">
-  <rect x="0.5" y="0.5" width="218" height="43" rx="10" fill="#eef1f4" stroke="#ced3d9"/>
+  <rect x="0.5" y="0.5" width="218" height="43" rx="10" fill="#e4eff3" stroke="#b7ccd5"/>
   <svg x="20" y="12.0" width="20" height="20" viewBox="0 0 24 24"><path d="M9 7l-5 5 5 5M15 7l5 5-5 5" fill="none" stroke="#027c93" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-  <text x="52" y="26.5" font-size="12" fill="#151819" font-weight="600" letter-spacing="1.6">HOW IT'S BUILT</text>
+  <text x="52" y="26.5" font-size="12" fill="#10161a" font-weight="600" letter-spacing="1.6">HOW IT'S BUILT</text>
 </svg>

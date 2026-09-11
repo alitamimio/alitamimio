@@ -38,6 +38,13 @@ jobs:
       - name: Rebuild the card
         run: python tools/build.py
 
+      # The gate. Both themes parse, the animation count stays under the
+      # headless ceiling, no text runs off the card or out of its box, and
+      # Chrome renders a frame mid-motion. A failure here stops the commit,
+      # so a bad build cannot sit on the profile until someone notices.
+      - name: Verify the card
+        run: python tools/verify.py --out /tmp/shots
+
       - name: Commit if anything moved
         run: |
           git config user.name  "github-actions[bot]"
@@ -50,4 +57,8 @@ jobs:
           git commit -m "chore(card): refresh the figures
 
           Nightly rebuild from the public contributions calendar."
+          # main may have moved while this ran: a push from Ali, or the
+          # snake's own job finishing. Rebase onto whatever is there rather
+          # than fail the night.
+          git pull --rebase --autostash origin "${GITHUB_REF_NAME}"
           git push
