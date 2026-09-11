@@ -507,8 +507,10 @@ def build(c, stats, langs, shots):
             x = PAD + i * 230
             o.append(txt(x, y, big, c["ink"], 27, 700))
             o.append(txt(x + 13 + 17 * len(big), y, small, c["muted"], 14))
+        # The date the calendar was read. If the nightly refresh stops working
+        # this is where it shows, to Ali, as a date that stops moving.
         o.append(txt(PAD, y + 26, 'The majority of this work lives in private and organisation '
-                     'repositories.', c["faint"], 13))
+                     f'repositories. Calendar read {stats["through"]}.', c["faint"], 13))
         y += 56
 
         # The language bar. TypeScript is the largest share of everything
@@ -556,35 +558,40 @@ def build(c, stats, langs, shots):
             .replace("{LOW}", str(round(height * 0.88))) + "\n")
 
 
-root = pathlib.Path(__file__).resolve().parent
-stats_file, langs_file = root / "stats.json", root / "langs.json"
-stats = json.loads(stats_file.read_text()) if stats_file.exists() else None
-langs = json.loads(langs_file.read_text()) if langs_file.exists() else None
-assets = root.parent / "assets"
-assets.mkdir(exist_ok=True)
-# Project images, when Ali has dropped them in. Nothing placeholder is drawn
-# in their absence: the row simply renders as text.
-shots = {}
-for name, _, _ in WORK[:FEATURED]:
-    for ext in (".png", ".jpg", ".jpeg"):
-        p = assets / "shots" / f"{name.lower()}{ext}"
-        if p.exists():
-            shots[name] = p
-            break
+def main():
+    root = pathlib.Path(__file__).resolve().parent
+    stats_file, langs_file = root / "stats.json", root / "langs.json"
+    stats = json.loads(stats_file.read_text()) if stats_file.exists() else None
+    langs = json.loads(langs_file.read_text()) if langs_file.exists() else None
+    assets = root.parent / "assets"
+    assets.mkdir(exist_ok=True)
+    # Project images, when Ali has dropped them in. Nothing placeholder is
+    # drawn in their absence: the row simply renders as text.
+    shots = {}
+    for name, _, _ in WORK[:FEATURED]:
+        for ext in (".png", ".jpg", ".jpeg"):
+            p = assets / "shots" / f"{name.lower()}{ext}"
+            if p.exists():
+                shots[name] = p
+                break
 
-for name, palette in (("dark", DARK), ("light", LIGHT)):
-    out = assets / f"card-{name}.svg"
-    svg = build(palette, stats, langs, shots)
-    out.write_text(svg)
-    # Past roughly 35 indefinitely-repeating animations a headless renderer
-    # stops advancing the clock and the card screenshots frozen. Counting it
-    # here keeps that ceiling visible.
-    loops = svg.count('repeatCount="indefinite"')
-    flag = "  <-- over the headless ceiling" if loops > 30 else ""
-    print(f"assets/card-{name}.svg  ({out.stat().st_size:,} bytes, {loops} looping"
-          f"{', ' + str(len(shots)) + ' images' if shots else ''}){flag}")
+    for name, palette in (("dark", DARK), ("light", LIGHT)):
+        out = assets / f"card-{name}.svg"
+        svg = build(palette, stats, langs, shots)
+        out.write_text(svg)
+        # Past roughly 35 indefinitely-repeating animations a headless renderer
+        # stops advancing the clock and the card screenshots frozen. Counting
+        # it here keeps that ceiling visible.
+        loops = svg.count('repeatCount="indefinite"')
+        flag = "  <-- over the headless ceiling" if loops > 30 else ""
+        print(f"assets/card-{name}.svg  ({out.stat().st_size:,} bytes, {loops} looping"
+              f"{', ' + str(len(shots)) + ' images' if shots else ''}){flag}")
 
-    for slug, label, kind, d in LINKS:
-        btn = assets / f"link-{slug}-{name}.svg"
-        btn.write_text(button(palette, label, kind, d))
-        print(f"  {btn.name}  ({btn.stat().st_size:,} bytes)")
+        for slug, label, kind, d in LINKS:
+            btn = assets / f"link-{slug}-{name}.svg"
+            btn.write_text(button(palette, label, kind, d))
+            print(f"  {btn.name}  ({btn.stat().st_size:,} bytes)")
+
+
+if __name__ == "__main__":
+    main()

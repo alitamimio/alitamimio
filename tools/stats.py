@@ -52,6 +52,10 @@ tips = dict(re.findall(
 
 if not cells:
     sys.exit("could not parse the contributions calendar; markup may have changed")
+if not tips:
+    # The day cells parsed but not one count did. Without this the card would
+    # rebuild with every figure at zero and look, for all the world, correct.
+    sys.exit("found the calendar but not a single count; the tooltip markup may have changed")
 
 days = sorted((date, 0 if tips.get(cid, "No") == "No" else int(tips[cid].replace(",", "")))
               for cid, date in cells.items())
@@ -81,6 +85,9 @@ stats = {
     "recent": [n for _, n in days[-21:]],
     "through": days[-1][0],
 }
+
+if stats["total"] == 0:
+    sys.exit("parsed a year with zero contributions, which is not this account; refusing to write it")
 
 out = pathlib.Path(__file__).resolve().parent / "stats.json"
 out.write_text(json.dumps(stats, indent=2) + "\n")
