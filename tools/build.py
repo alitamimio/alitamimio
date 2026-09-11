@@ -87,11 +87,11 @@ CLIENT = [("STREAM CLIENT", "SSE"), ("APPLICATION STATE", "per token"),
 # tools lit in turn, the answer arriving, a hold, then every line fading
 # together before it starts again. The card demonstrates the work instead of
 # describing it. The answer names the architecture and ends on the interface.
-ASK = "what do you build, end to end?"
+ASK = "what do you actually own on a project?"
 TRACE = ["ROUTE", "RETRIEVE", "STREAM", "RENDER"]
 ANSWER = [
-    "The full path: a FastAPI gateway, a local model, Postgres underneath, and a",
-    "Next.js interface that renders every token the moment it arrives.",
+    "The interface, and everything it talks to. The design system and the",
+    "screens, the API and the data underneath, and the model in between.",
 ]
 STRIP_H = 150
 CYCLE = 14
