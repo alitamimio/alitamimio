@@ -50,7 +50,7 @@ LIGHT = dict(
 # they are where the work is strongest; FULL STACK, the broadest claim, goes
 # last. Each line names what the work actually is, from the repositories.
 ROLES = [
-    ("AI",         "Retrieval-grounded agents over enterprise document sets, served "
+    ("AI",         "Agents grounded in retrieval over enterprise document sets, served "
                    "through a streaming gateway"),
     ("UI/UX",      "Design systems, accessible component libraries, and every "
                    "state an interface can be in"),
@@ -68,13 +68,13 @@ ROLES = [
 # shipping both languages is the bare minimum, and naming it as a credential
 # reads as though it were hard.
 WORK = [
-    ("KHAYARAK", "Price-comparison platform for the Jordanian market: live shop data, price alerts, and a chat that answers from both.",
+    ("KHAYARAK", "Price comparison platform for the Jordanian market: live shop data, price alerts, and a chat that answers from both.",
      "Next.js 16 · Tailwind v4 · TypeScript · Python gateway"),
     ("FORTILINK", "Fortinet integration console: interactive tool catalog, command palette, and an accessible dialog system.",
      "TypeScript · shadcn/ui · Radix · Framer Motion · Tailwind v4"),
-    ("RASED", "Real-time traffic intelligence: live dashboards and model-monitored camera feeds.",
+    ("RASED", "Traffic intelligence in real time: live dashboards and camera feeds a model watches.",
      "Node · Prometheus · PostgreSQL · Docker"),
-    ("VOC360", "Fourteen-service platform that ingests public feedback, classifies it, and traces each issue to its root cause.",
+    ("VOC360", "Fourteen services that ingest public feedback, classify it, and trace each issue to its root cause.",
      "FastAPI · PostgreSQL + pgvector · Redis · Docker"),
 ]
 FEATURED = 2
@@ -385,7 +385,7 @@ def build(c, stats, langs, shots):
     # the right side reads as composed rather than as a hole.
     o.append(f'  <rect x="{PAD+2}" y="{y+22}" width="{CONTENT}" height="2" rx="1" fill="url(#rule)"/>')
     o.append(txt(PAD + 2, y + 58, "AI Solutions Engineer", c["ink"], 21, 600))
-    o.append(txt(PAD + 2, y + 86, "Full-stack engineer specialising in UI/UX and frontend architecture.",
+    o.append(txt(PAD + 2, y + 86, "Full stack engineer specialising in UI/UX and frontend architecture.",
                  c["ink"], 17))
     o.append(txt(PAD + 2, y + 110, "9XAI Fellow · Al Hussein Technical University", c["faint"], 13))
 
