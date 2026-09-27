@@ -73,7 +73,7 @@ WORK = [
      "Next.js 16 · Tailwind v4 · TypeScript · Python gateway"),
     ("FORTILINK", "Fortinet integration console: interactive tool catalog, command palette, and an accessible dialog system.",
      "TypeScript · shadcn/ui · Radix · Framer Motion · Tailwind v4"),
-    ("RASED", "Traffic intelligence in real time: live dashboards and camera feeds a model watches.",
+    ("RASED", "Decision support for Amman's traffic: proposes signal timings and green waves, each verified against the whole network before it is issued.",
      "React · MapLibre · NestJS · PostgreSQL · Prometheus"),
     ("GUESS THE PROMPT", "Event game scored by meaning: players guess the prompt behind an AI image, graded offline by an embedding model in the browser.",
      "React 19 · Transformers.js · MiniLM on WASM · Tailwind v4"),
@@ -250,14 +250,91 @@ def marks_row(o, y, group, c):
     return y + tile + 30
 
 
-def shot(o, x, y, w, h, path, c, uid):
-    """A project image, embedded. The proxy blocks external references from
-    an SVG served as <img>, so the bytes travel inside the card."""
-    mime = "image/jpeg" if path.suffix.lower() in (".jpg", ".jpeg") else "image/png"
-    data = base64.b64encode(path.read_bytes()).decode()
+def focus_ring(o, rows, c):
+    """Keyboard focus tabbing through the stack, and the TAB key that moves it.
+
+    The accessibility claim in WHAT I DO, shown rather than said. One ring
+    visits every tile in reading order and wraps to the first, gliding
+    between stops; the key lights as each move starts. Two loops for the
+    whole stack, where lighting each tile would cost sixteen.
+    """
+    tile, step, glide = 44, 0.6, 0.16
+    stops = []
+    for y, group in rows:
+        cell = CONTENT / len(group)
+        stops += [(round(PAD + cell * i + cell / 2 - tile / 2, 1), y) for i in range(len(group))]
+    n, (x0, y0) = len(stops), stops[0]
+    dur = round(n * step, 2)
+    rel = [(round(x - x0, 1), round(y - y0, 1)) for x, y in stops]
+    vals, kt, spl = [rel[0]], [0.0], []
+    for k in range(n):
+        vals += [rel[k], rel[(k + 1) % n]]
+        kt += [((k + 1) * step - glide) / dur, (k + 1) * step / dur]
+        spl += ["0 0 1 1", "0.3 0 0.2 1"]
+    o.append(f'  <g><rect x="{x0 - 5}" y="{y0 - 5}" width="{tile + 10}" height="{tile + 10}" rx="15" '
+             f'fill="none" stroke="{c["sweep"]}" stroke-opacity="0.22" stroke-width="5"/>'
+             f'<rect x="{x0 - 3.5}" y="{y0 - 3.5}" width="{tile + 7}" height="{tile + 7}" rx="13.5" '
+             f'fill="none" stroke="{c["brand"]}" stroke-width="2"/>'
+             f'<animateTransform attributeName="transform" type="translate" '
+             f'values="{";".join(f"{a} {b}" for a, b in vals)}" '
+             f'keyTimes="{";".join(str(round(t, 5)) for t in kt)}" keySplines="{";".join(spl)}" '
+             f'calcMode="spline" dur="{dur}s" begin="0s" repeatCount="indefinite"/></g>')
+
+    # The key sits at the right end of the INTERFACE label's line. Its glow
+    # is a path rather than a rect: verify.py reads a group of one rect and
+    # some text as a chip, and the keycap already is one.
+    kw, kh = 40, 18
+    kx, ky = PAD + CONTENT - kw, rows[0][0] - 33
+    press, pt = [0], [0.0]
+    for k in range(n):
+        t = (k + 1) * step - glide
+        press += [0, 1, 0]
+        pt += [(t - 0.01) / dur, t / dur, (t + 0.14) / dur]
+    press.append(0)
+    pt.append(1.0)
+    o.append(f'  <g><rect x="{kx}" y="{ky}" width="{kw}" height="{kh}" rx="5" fill="none" '
+             f'stroke="{c["line"]}"/>'
+             f'<text x="{kx + kw / 2}" y="{ky + 12.5}" text-anchor="middle" font-size="9" '
+             f'font-weight="700" letter-spacing="1.2" fill="{c["faint"]}">TAB</text></g>')
+    o.append(f'  <path d="M{kx + 5} {ky} h{kw - 10} a5 5 0 0 1 5 5 v{kh - 10} a5 5 0 0 1 -5 5 '
+             f'h{10 - kw} a5 5 0 0 1 -5 -5 v{10 - kh} a5 5 0 0 1 5 -5 z" fill="{c["brand"]}" '
+             f'fill-opacity="0.35" opacity="0"><animate attributeName="opacity" '
+             f'values="{";".join(map(str, press))}" '
+             f'keyTimes="{";".join(str(round(t, 5)) for t in pt)}" dur="{dur}s" begin="0s" '
+             f'repeatCount="indefinite"/></path>')
+
+
+def shot(o, x, y, w, h, paths, c, uid):
+    """A project's images, embedded. The proxy blocks external references
+    from an SVG served as <img>, so the bytes travel inside the card.
+
+    With more than one image the card cycles through them: each fades in
+    over the last, and the last fades out to reveal the first. The first is
+    the base state, so a renderer without SMIL still shows it.
+    """
+    hold, fade = 3.2, 0.7
+    n, per = len(paths), hold + fade
+    dur = round(n * per, 2)
     o.append(f'  <clipPath id="{uid}"><rect x="{x}" y="{y}" width="{w}" height="{h}" rx="9"/></clipPath>')
-    o.append(f'  <g><image x="{x}" y="{y}" width="{w}" height="{h}" preserveAspectRatio="xMidYMid slice" '
-             f'clip-path="url(#{uid})" href="data:{mime};base64,{data}"/>'
+    imgs = []
+    for k, p in enumerate(paths):
+        mime = "image/jpeg" if p.suffix.lower() in (".jpg", ".jpeg") else "image/png"
+        data = base64.b64encode(p.read_bytes()).decode()
+        img = (f'<image x="{x}" y="{y}" width="{w}" height="{h}" preserveAspectRatio="xMidYMid slice" '
+               f'href="data:{mime};base64,{data}"')
+        if k == 0:
+            imgs.append(img + '/>')
+            continue
+        # Each image but the last drops out once the next one covers it.
+        on, full = k * per - fade, k * per
+        if k < n - 1:
+            vals, kt = "0;0;1;1;0;0", [0, on, full, full + per, full + per + 0.01, dur]
+        else:
+            vals, kt = "0;0;1;1;0", [0, on, full, dur - fade, dur]
+        imgs.append(img + f' opacity="0"><animate attributeName="opacity" values="{vals}" '
+                    f'keyTimes="{";".join(str(round(t / dur, 5)) for t in kt)}" dur="{dur}s" '
+                    f'begin="0s" repeatCount="indefinite"/></image>')
+    o.append(f'  <g><g clip-path="url(#{uid})">{"".join(imgs)}</g>'
              f'<rect x="{x}" y="{y}" width="{w}" height="{h}" rx="9" fill="none" stroke="{c["line"]}"/></g>')
 
 
@@ -407,12 +484,17 @@ def build(c, stats, langs, shots):
     o.append(section(y, "STACK", c))
     y += 34
     o.append(txt(PAD, y, "INTERFACE", c["brand"], 9.5, 700, 1.6))
+    rows = [(y + 20, INTERFACE)]
     y = marks_row(o, y + 20, INTERFACE, c)
     o.append(txt(PAD, y + 14, "SYSTEMS", c["brand"], 9.5, 700, 1.6))
+    rows.append((y + 34, SYSTEMS))
     y = marks_row(o, y + 34, SYSTEMS, c)
+    focus_ring(o, rows, c)
 
     # ---- selected work ----------------------------------------------------
-    y += 22
+    # The same air above this label as above every other section's; at 22
+    # it sat half as far from the stack as STACK sits from WHAT I DO.
+    y += 44
     o.append(section(y, "SELECTED WORK", c))
     y += 36
     # Two columns the whole way down. The FEATURED carry an image above the
@@ -515,7 +597,10 @@ def build(c, stats, langs, shots):
         for i, (big, small) in enumerate(figures):
             x = PAD + i * 230
             o.append(txt(x, y, big, c["ink"], 27, 700))
-            o.append(txt(x + 13 + 17 * len(big), y, small, c["muted"], 14))
+            # A comma is about half a digit wide. Counting it as a whole one
+            # left twice the gap after 1,025 that there was after 24.
+            wide = sum(8 if ch == "," else 16.2 for ch in big)
+            o.append(txt(round(x + wide + 12, 1), y, small, c["muted"], 14))
         y += 34
 
         # The language bar. TypeScript is the largest share of everything
@@ -528,7 +613,10 @@ def build(c, stats, langs, shots):
             top = sorted(by.items(), key=lambda kv: -kv[1])[:5]
             shown = sum(v for _, v in top)
             segs = top + ([("Other", total - shown)] if total - shown > 0 else [])
-            tone = [c["sweep"], c["brand"], c["muted"], c["line"], c["line"], c["line"]]
+            # From the fourth language on, the tone is faint rather than the
+            # hairline colour: at line on the dark ground, HTML's legend dot
+            # did not show at all.
+            tone = [c["sweep"], c["brand"], c["muted"], c["faint"], c["faint"], c["faint"]]
             o.append(f'  <clipPath id="langbar"><rect x="{PAD}" y="{y}" width="{CONTENT}" height="10">'
                      f'<animate attributeName="width" values="0;{CONTENT}" dur="1.1s" begin="0s" '
                      f'fill="freeze" calcMode="spline" keySplines="0.16 1 0.3 1"/></rect></clipPath>')
@@ -569,14 +657,23 @@ def main():
     assets = root.parent / "assets"
     assets.mkdir(exist_ok=True)
     # Project images, when Ali has dropped them in. Nothing placeholder is
-    # drawn in their absence: the row simply renders as text.
+    # drawn in their absence: the row simply renders as text. <name>-2,
+    # <name>-3 and on, when present, join the first and the card cycles
+    # through them.
     shots = {}
     for name, _, _ in WORK[:FEATURED]:
-        for ext in (".png", ".jpg", ".jpeg"):
-            p = assets / "shots" / f"{name.lower().replace(' ', '-')}{ext}"
-            if p.exists():
-                shots[name] = p
+        slug = name.lower().replace(" ", "-")
+        found = []
+        for stem in [slug] + [f"{slug}-{k}" for k in range(2, 6)]:
+            for ext in (".png", ".jpg", ".jpeg"):
+                p = assets / "shots" / f"{stem}{ext}"
+                if p.exists():
+                    found.append(p)
+                    break
+            else:
                 break
+        if found:
+            shots[name] = found
 
     for name, palette in (("dark", DARK), ("light", LIGHT)):
         out = assets / f"card-{name}.svg"
@@ -586,7 +683,7 @@ def main():
         # stops advancing the clock and the card screenshots frozen. Counting
         # it here keeps that ceiling visible.
         loops = svg.count('repeatCount="indefinite"')
-        flag = "  <-- over the headless ceiling" if loops > 30 else ""
+        flag = "  <-- over the headless ceiling" if loops > 35 else ""
         print(f"assets/card-{name}.svg  ({out.stat().st_size:,} bytes, {loops} looping"
               f"{', ' + str(len(shots)) + ' images' if shots else ''}){flag}")
 

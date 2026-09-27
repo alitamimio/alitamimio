@@ -41,7 +41,7 @@ alternative terminal endings (Ali's call: v5's fade stays).
 ## Two constraints
 
 **Animation ceiling.** `verify.py` fails above 35 indefinitely repeating
-animations; the card ships at 29. The Arabic stream needs roughly three.
+animations; the card ships at 33 (the stack focus ring and the Guess the Prompt screens take two each). The Arabic stream needs roughly three, so it no longer fits without a cut.
 
 **Height.** 1000 × 1924. Every addition from here is paid for by a cut.
 
