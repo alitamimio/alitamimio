@@ -250,90 +250,92 @@ def marks_row(o, y, group, c):
     return y + tile + 30
 
 
-def focus_ring(o, rows, c):
-    """Keyboard focus tabbing through the stack, and the TAB key that moves it.
+def spotlight(o, rows, c):
+    """A soft glow lapping the stack at one steady speed.
 
-    The accessibility claim in WHAT I DO, shown rather than said. One ring
-    visits every tile in reading order and wraps to the first, gliding
-    between stops; the key lights as each move starts. Two loops for the
-    whole stack, where lighting each tile would cost sixteen.
+    Along INTERFACE to the right, round the end, back along SYSTEMS and round
+    again, lighting each icon, tile edge and tile face it passes. The glow is
+    masked by the stack's own shapes, so only the tiles light, never the
+    ground. Paced motion on one path: one loop for the whole stack. Ali's
+    call, 2026-09-27: a focus ring that hopped tile to tile read as jumpy.
     """
-    tile, step, glide = 44, 0.6, 0.16
-    stops = []
+    tile, mark = 44, 24
+    off = (tile - mark) / 2
+    shapes = []
     for y, group in rows:
         cell = CONTENT / len(group)
-        stops += [(round(PAD + cell * i + cell / 2 - tile / 2, 1), y) for i in range(len(group))]
-    n, (x0, y0) = len(stops), stops[0]
-    dur = round(n * step, 2)
-    rel = [(round(x - x0, 1), round(y - y0, 1)) for x, y in stops]
-    vals, kt, spl = [rel[0]], [0.0], []
-    for k in range(n):
-        vals += [rel[k], rel[(k + 1) % n]]
-        kt += [((k + 1) * step - glide) / dur, (k + 1) * step / dur]
-        spl += ["0 0 1 1", "0.3 0 0.2 1"]
-    o.append(f'  <g><rect x="{x0 - 5}" y="{y0 - 5}" width="{tile + 10}" height="{tile + 10}" rx="15" '
-             f'fill="none" stroke="{c["sweep"]}" stroke-opacity="0.22" stroke-width="5"/>'
-             f'<rect x="{x0 - 3.5}" y="{y0 - 3.5}" width="{tile + 7}" height="{tile + 7}" rx="13.5" '
-             f'fill="none" stroke="{c["brand"]}" stroke-width="2"/>'
-             f'<animateTransform attributeName="transform" type="translate" '
-             f'values="{";".join(f"{a} {b}" for a, b in vals)}" '
-             f'keyTimes="{";".join(str(round(t, 5)) for t in kt)}" keySplines="{";".join(spl)}" '
-             f'calcMode="spline" dur="{dur}s" begin="0s" repeatCount="indefinite"/></g>')
-
-    # The key sits at the right end of the INTERFACE label's line. Its glow
-    # is a path rather than a rect: verify.py reads a group of one rect and
-    # some text as a chip, and the keycap already is one.
-    kw, kh = 40, 18
-    kx, ky = PAD + CONTENT - kw, rows[0][0] - 33
-    press, pt = [0], [0.0]
-    for k in range(n):
-        t = (k + 1) * step - glide
-        press += [0, 1, 0]
-        pt += [(t - 0.01) / dur, t / dur, (t + 0.14) / dur]
-    press.append(0)
-    pt.append(1.0)
-    o.append(f'  <g><rect x="{kx}" y="{ky}" width="{kw}" height="{kh}" rx="5" fill="none" '
-             f'stroke="{c["line"]}"/>'
-             f'<text x="{kx + kw / 2}" y="{ky + 12.5}" text-anchor="middle" font-size="9" '
-             f'font-weight="700" letter-spacing="1.2" fill="{c["faint"]}">TAB</text></g>')
-    o.append(f'  <path d="M{kx + 5} {ky} h{kw - 10} a5 5 0 0 1 5 5 v{kh - 10} a5 5 0 0 1 -5 5 '
-             f'h{10 - kw} a5 5 0 0 1 -5 -5 v{10 - kh} a5 5 0 0 1 5 -5 z" fill="{c["brand"]}" '
-             f'fill-opacity="0.35" opacity="0"><animate attributeName="opacity" '
-             f'values="{";".join(map(str, press))}" '
-             f'keyTimes="{";".join(str(round(t, 5)) for t in pt)}" dur="{dur}s" begin="0s" '
-             f'repeatCount="indefinite"/></path>')
+        for i, (_, _, d) in enumerate(group):
+            x = round(PAD + cell * i + cell / 2 - tile / 2, 1)
+            shapes.append(f'<rect x="{x}" y="{y}" width="{tile}" height="{tile}" rx="11" fill="#fff" '
+                          f'fill-opacity="0.12" stroke="#fff" stroke-width="1.4"/>'
+                          f'<svg x="{x + off}" y="{y + off}" width="{mark}" height="{mark}" '
+                          f'viewBox="0 0 24 24"><path d="{d}" fill="#fff"/></svg>')
+    first = CONTENT / len(rows[0][1])
+    xl, xr = round(PAD + first / 2, 1), round(PAD + CONTENT - first / 2, 1)
+    yi, ys = rows[0][0] + tile / 2, rows[1][0] + tile / 2
+    r = round((ys - yi) / 2, 1)
+    lap = f"M{xl} {yi} H{xr} A{r} {r} 0 0 1 {xr} {ys} H{xl} A{r} {r} 0 0 1 {xl} {yi} Z"
+    mx, my = PAD - 14, rows[0][0] - 10
+    mw, mh = CONTENT + 28, rows[-1][0] + tile + 10 - my
+    stops = "".join(f'<stop offset="{at}" stop-color="{c["sweep"]}" stop-opacity="{op}"/>'
+                    for at, op in ((0, 1), (0.35, 0.62), (0.7, 0.16), (1, 0)))
+    o.append(f'  <defs><radialGradient id="spotg">{stops}</radialGradient>'
+             f'<mask id="spotm" maskUnits="userSpaceOnUse" x="{mx}" y="{my}" width="{mw}" height="{mh}">'
+             f'{"".join(shapes)}</mask></defs>')
+    o.append(f'  <g mask="url(#spotm)"><circle r="120" fill="url(#spotg)">'
+             f'<animateMotion path="{lap}" dur="16s" begin="0s" repeatCount="indefinite"/></circle></g>')
 
 
-def shot(o, x, y, w, h, paths, c, uid):
-    """A project's images, embedded. The proxy blocks external references
+SCREEN_HOLD, SCREEN_FADE = 3.2, 0.7
+
+
+def screen_mask(o, made, phase, k, n):
+    """The mask that shows screen k of n on one of the two shared clocks.
+
+    Every project image rides one of two clocks, half a screen apart and
+    laid out as a checkerboard, so two cards change at a time and never all
+    four. The animation lives in the mask, not the image, so a clock costs
+    one loop per screen after the first however many projects ride it: four
+    loops for twelve screens, where one per image would cost eight and put
+    the card over the gate's ceiling. Each screen but the last drops out
+    once the next covers it; the last fades to reveal the first.
+    """
+    uid = f"screen{phase}-{k}of{n}"
+    if uid in made:
+        return uid
+    made.add(uid)
+    per = SCREEN_HOLD + SCREEN_FADE
+    dur = round(n * per, 2)
+    on, full = k * per - SCREEN_FADE, k * per
+    if k < n - 1:
+        vals, kt = "0;0;1;1;0;0", [0, on, full, full + per, full + per + 0.01, dur]
+    else:
+        vals, kt = "0;0;1;1;0", [0, on, full, dur - SCREEN_FADE, dur]
+    begin = f"-{round(per / 2, 2)}s" if phase else "0s"
+    o.append(f'  <mask id="{uid}" maskContentUnits="objectBoundingBox"><rect width="1" height="1" '
+             f'fill="#fff" opacity="0"><animate attributeName="opacity" values="{vals}" '
+             f'keyTimes="{";".join(str(round(t / dur, 5)) for t in kt)}" dur="{dur}s" '
+             f'begin="{begin}" repeatCount="indefinite"/></rect></mask>')
+    return uid
+
+
+def shot(o, x, y, w, h, paths, c, uid, phase=0, made=None):
+    """A project's screens, embedded. The proxy blocks external references
     from an SVG served as <img>, so the bytes travel inside the card.
 
-    With more than one image the card cycles through them: each fades in
-    over the last, and the last fades out to reveal the first. The first is
-    the base state, so a renderer without SMIL still shows it.
+    With more than one screen the card cycles through them on a shared
+    clock (see screen_mask). The first is the base state, so a renderer
+    without SMIL still shows it.
     """
-    hold, fade = 3.2, 0.7
-    n, per = len(paths), hold + fade
-    dur = round(n * per, 2)
+    made = set() if made is None else made
     o.append(f'  <clipPath id="{uid}"><rect x="{x}" y="{y}" width="{w}" height="{h}" rx="9"/></clipPath>')
     imgs = []
     for k, p in enumerate(paths):
         mime = "image/jpeg" if p.suffix.lower() in (".jpg", ".jpeg") else "image/png"
         data = base64.b64encode(p.read_bytes()).decode()
-        img = (f'<image x="{x}" y="{y}" width="{w}" height="{h}" preserveAspectRatio="xMidYMid slice" '
-               f'href="data:{mime};base64,{data}"')
-        if k == 0:
-            imgs.append(img + '/>')
-            continue
-        # Each image but the last drops out once the next one covers it.
-        on, full = k * per - fade, k * per
-        if k < n - 1:
-            vals, kt = "0;0;1;1;0;0", [0, on, full, full + per, full + per + 0.01, dur]
-        else:
-            vals, kt = "0;0;1;1;0", [0, on, full, dur - fade, dur]
-        imgs.append(img + f' opacity="0"><animate attributeName="opacity" values="{vals}" '
-                    f'keyTimes="{";".join(str(round(t / dur, 5)) for t in kt)}" dur="{dur}s" '
-                    f'begin="0s" repeatCount="indefinite"/></image>')
+        mask = f' mask="url(#{screen_mask(o, made, phase, k, len(paths))})"' if k else ""
+        imgs.append(f'<image x="{x}" y="{y}" width="{w}" height="{h}" preserveAspectRatio="xMidYMid slice"'
+                    f'{mask} href="data:{mime};base64,{data}"/>')
     o.append(f'  <g><g clip-path="url(#{uid})">{"".join(imgs)}</g>'
              f'<rect x="{x}" y="{y}" width="{w}" height="{h}" rx="9" fill="none" stroke="{c["line"]}"/></g>')
 
@@ -489,7 +491,7 @@ def build(c, stats, langs, shots):
     o.append(txt(PAD, y + 14, "SYSTEMS", c["brand"], 9.5, 700, 1.6))
     rows.append((y + 34, SYSTEMS))
     y = marks_row(o, y + 34, SYSTEMS, c)
-    focus_ring(o, rows, c)
+    spotlight(o, rows, c)
 
     # ---- selected work ----------------------------------------------------
     # The same air above this label as above every other section's; at 22
@@ -507,6 +509,7 @@ def build(c, stats, langs, shots):
     # on the last row spans both columns rather than hanging in one.
     colw = round((CONTENT - 40) / 2)
     imgh = round(colw / 1.6)          # the screenshots' own aspect, uncropped
+    made = set()                      # the screen clocks' masks, drawn once
     for r in range(0, len(WORK), 2):
         top, tallest = y, 0
         row = WORK[r:r + 2]
@@ -516,7 +519,7 @@ def build(c, stats, langs, shots):
             cy = top
             pic = shots.get(name)
             if pic:
-                shot(o, cx, cy, cw, imgh, pic, c, f"shot{r}{col}")
+                shot(o, cx, cy, cw, imgh, pic, c, f"shot{r}{col}", (r // 2 + col) % 2, made)
                 cy += imgh + 18
             o.append(txt(cx, cy + 12, name, c["brand"], 14, 700, 1.4))
             ly = cy + 36

@@ -23,7 +23,7 @@ commit, never squashed. Fast-forward the branch after the merge.
 | Identity | `ALI TAMIMI`, a full-width rule fading right, `AI Solutions Engineer`, `Full-stack engineer specialising in UI/UX and frontend architecture.`, `9XAI Fellow · Al Hussein Technical University`. No location pill, no mark |
 | WHAT I DO | AI → UI/UX → FRONTEND → FULL STACK, four filled diamonds, every label in ink, copy rewritten from the repos |
 | STACK | `INTERFACE`: TypeScript, React, Next.js, Tailwind, shadcn/ui, Radix, Framer Motion, Vite. `SYSTEMS`: Python, FastAPI, Ollama, PostgreSQL, Redis, Docker, Prometheus, Node.js. Both labels in the brand. Figma is out until a repo evidences it |
-| SELECTED WORK | Khayarak, FortiLink, Rased and Guess the Prompt as a two column grid, each with its image above the text and the type flush with the image's left edge (Rased's landing page cleared for the card 2026-09-27). VOC360 as text only (may not be shown), spanning both columns beneath |
+| SELECTED WORK | Khayarak, FortiLink, Rased and Guess the Prompt as a two column grid, each cycling three screens above the text, two cards changing at a time, and the type flush with the image's left edge (Rased's landing page cleared for the card 2026-09-27). VOC360 as text only (may not be shown), spanning both columns beneath |
 | ARCHITECTURE | The request path `UI → GATEWAY → RETRIEVAL → MODEL` with the beam and the return lane; a `PLATFORM` row (PostgreSQL, Redis, Docker, Prometheus); an `INTERFACE LAYER` row (stream client, application state, components, render), still |
 | THIS YEAR | contributions, longest daily streak, active days; the language bar from every repo, drawn in once on load, with its as-of date. No sparkline |
 | Footer | None. Contact lives in the links row under the card |
@@ -41,7 +41,7 @@ alternative terminal endings (Ali's call: v5's fade stays).
 ## Two constraints
 
 **Animation ceiling.** `verify.py` fails above 35 indefinitely repeating
-animations; the card ships at 33 (the stack focus ring and the Guess the Prompt screens take two each). The Arabic stream needs roughly three, so it no longer fits without a cut.
+animations; the card ships at 34 (one for the stack's spotlight, four for the two shared clocks that cycle every project's screens). The Arabic stream needs roughly three, so it no longer fits without a cut.
 
 **Height.** 1000 × 1924. Every addition from here is paid for by a cut.
 
