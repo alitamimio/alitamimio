@@ -60,9 +60,10 @@ ROLES = [
                    "observability"),
 ]
 
-# The first FEATURED carry their landing page above the text, when one exists
-# in assets/shots/<name>.jpg; the rest are text in the same grid. Rased and
-# VOC360 may not be shown, so they stay last whatever lands in that folder.
+# The first FEATURED carry an image above the text, when one exists in
+# assets/shots/<name>.jpg, with spaces as hyphens; the rest are text in the
+# same grid. VOC360 may not be shown, so it stays last whatever lands in that
+# folder. Rased's landing page was cleared for the card on 2026-09-27.
 #
 # Nothing here sells Arabic or RTL as an achievement. Ali's note, 2026-09-11:
 # shipping both languages is the bare minimum, and naming it as a credential
@@ -73,11 +74,13 @@ WORK = [
     ("FORTILINK", "Fortinet integration console: interactive tool catalog, command palette, and an accessible dialog system.",
      "TypeScript · shadcn/ui · Radix · Framer Motion · Tailwind v4"),
     ("RASED", "Traffic intelligence in real time: live dashboards and camera feeds a model watches.",
-     "Node · Prometheus · PostgreSQL · Docker"),
+     "React · MapLibre · NestJS · PostgreSQL · Prometheus"),
+    ("GUESS THE PROMPT", "Event game scored by meaning: players guess the prompt behind an AI image, graded offline by an embedding model in the browser.",
+     "React 19 · Transformers.js · MiniLM on WASM · Tailwind v4"),
     ("VOC360", "Fourteen services that ingest public feedback, classify it, and trace each issue to its root cause.",
      "FastAPI · PostgreSQL + pgvector · Redis · Docker"),
 ]
-FEATURED = 2
+FEATURED = 4
 
 # The request path, the platform it runs on, and what the client does with
 # every token that comes back. Each row says something the others do not.
@@ -412,36 +415,33 @@ def build(c, stats, langs, shots):
     y += 22
     o.append(section(y, "SELECTED WORK", c))
     y += 36
-    # Two columns the whole way down. The first two carry their landing page
-    # above the words; the rest sit in the same grid without one, so the
-    # section reads as one thing rather than a feature strip and a list.
-    # Each row is as tall as its tallest card, so the next row starts level.
-    # Every card's type is centred in its column, including the two without
-    # an image, so both rows read as the same grid.
+    # Two columns the whole way down. The FEATURED carry an image above the
+    # words; the rest sit in the same grid without one, so the section reads
+    # as one thing rather than a feature strip and a list. Each row is as
+    # tall as its tallest card, so the next row starts level. Every card's
+    # type sits flush with its image's left edge, including those without an
+    # image, so every row reads as the same grid. Ali's call, 2026-09-27: the
+    # centred type read as a caption rather than a column. A card left alone
+    # on the last row spans both columns rather than hanging in one.
     colw = round((CONTENT - 40) / 2)
     imgh = round(colw / 1.6)          # the screenshots' own aspect, uncropped
     for r in range(0, len(WORK), 2):
         top, tallest = y, 0
-        for col, (name, what, tech) in enumerate(WORK[r:r + 2]):
+        row = WORK[r:r + 2]
+        for col, (name, what, tech) in enumerate(row):
             cx = PAD + col * (colw + 40)
+            cw = colw if len(row) == 2 else colw * 2 + 40
             cy = top
             pic = shots.get(name)
             if pic:
-                shot(o, cx, cy, colw, imgh, pic, c, f"shot{r}{col}")
+                shot(o, cx, cy, cw, imgh, pic, c, f"shot{r}{col}")
                 cy += imgh + 18
-            mid = round(cx + colw / 2, 1)
-            # Centred in the column, under the image rather than flush with
-            # its left edge. text-anchor="middle" centres the advance width,
-            # and SVG letter-spacing adds a gap after the last glyph as well
-            # as between them, so a tracked run lands ls/2 right of centre.
-            # Only the name is tracked, so only the name is pulled back.
-            o.append(txt(round(mid - 0.7, 1), cy + 12, name, c["brand"], 14, 700, 1.4,
-                         anchor="middle"))
+            o.append(txt(cx, cy + 12, name, c["brand"], 14, 700, 1.4))
             ly = cy + 36
-            for line in wrap(what, 14, colw):
-                o.append(txt(mid, ly, line, c["ink"], 14, anchor="middle"))
+            for line in wrap(what, 14, cw):
+                o.append(txt(cx, ly, line, c["ink"], 14))
                 ly += 19
-            o.append(txt(mid, ly + 4, tech, c["faint"], 12, anchor="middle"))
+            o.append(txt(cx, ly + 4, tech, c["faint"], 12))
             tallest = max(tallest, ly + 4 - top)
         y = top + tallest + 44
     y += 10
@@ -573,7 +573,7 @@ def main():
     shots = {}
     for name, _, _ in WORK[:FEATURED]:
         for ext in (".png", ".jpg", ".jpeg"):
-            p = assets / "shots" / f"{name.lower()}{ext}"
+            p = assets / "shots" / f"{name.lower().replace(' ', '-')}{ext}"
             if p.exists():
                 shots[name] = p
                 break
