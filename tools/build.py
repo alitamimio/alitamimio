@@ -65,16 +65,20 @@ ROLES = [
 # same grid. VOC360 may not be shown, so it stays last whatever lands in that
 # folder. Rased's landing page was cleared for the card on 2026-09-27.
 #
+# The grid reads two to a row, in Ali's order (2026-10-03): Khayarak and Rased,
+# then FortiLink and Guess the Prompt. Each project's first image is always its
+# landing page (for the game, its title screen); the next two are the product.
+#
 # Nothing here sells Arabic or RTL as an achievement. Ali's note, 2026-09-11:
 # shipping both languages is the bare minimum, and naming it as a credential
 # reads as though it were hard.
 WORK = [
     ("KHAYARAK", "Price comparison platform for the Jordanian market: live shop data, price alerts, and a chat that answers from both.",
      "Next.js 16 · Tailwind v4 · TypeScript · Python gateway"),
-    ("FORTILINK", "Fortinet integration console: interactive tool catalog, command palette, and an accessible dialog system.",
-     "TypeScript · shadcn/ui · Radix · Framer Motion · Tailwind v4"),
     ("RASED", "Decision support for Amman's traffic: proposes signal timings and green waves, each verified against the whole network before it is issued.",
      "React · MapLibre · NestJS · PostgreSQL · Prometheus"),
+    ("FORTILINK", "Fortinet integration console: interactive tool catalog, command palette, and an accessible dialog system.",
+     "TypeScript · shadcn/ui · Radix · Framer Motion · Tailwind v4"),
     ("GUESS THE PROMPT", "Event game scored by meaning: players guess the prompt behind an AI image, graded offline by an embedding model in the browser.",
      "React 19 · Transformers.js · MiniLM on WASM · Tailwind v4"),
     ("VOC360", "Fourteen services that ingest public feedback, classify it, and trace each issue to its root cause.",
