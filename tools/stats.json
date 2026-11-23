@@ -1,10 +1,9 @@
 {
-  "total": 2521,
-  "streak": 22,
+  "total": 2530,
+  "streak": 23,
   "best_streak": 24,
-  "active_days": 142,
+  "active_days": 143,
   "recent": [
-    34,
     29,
     46,
     31,
@@ -23,8 +22,9 @@
     80,
     29,
     16,
-    7,
-    1
+    6,
+    8,
+    3
   ],
-  "through": "2026-11-22"
+  "through": "2026-11-23"
 }
