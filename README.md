@@ -23,7 +23,7 @@
 </p>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)"  srcset="https://raw.githubusercontent.com/alitamimio/alitamimio/output/snake-dark.svg?v=2">
-  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/alitamimio/alitamimio/output/snake-light.svg?v=2">
-  <img src="https://raw.githubusercontent.com/alitamimio/alitamimio/output/snake-dark.svg?v=2" width="100%" alt="A snake crawling the contribution graph and eating the squares, drawn in greys to match the card.">
+  <source media="(prefers-color-scheme: dark)"  srcset="https://raw.githubusercontent.com/alitamimio/alitamimio/output/snake-dark.svg?v=3">
+  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/alitamimio/alitamimio/output/snake-light.svg?v=3">
+  <img src="https://raw.githubusercontent.com/alitamimio/alitamimio/output/snake-dark.svg?v=3" width="100%" alt="A snake crawling the contribution graph and eating the squares, drawn in greys to match the card.">
 </picture>
