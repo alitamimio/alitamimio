@@ -46,13 +46,14 @@ DARK = dict(
     # The stack's spotlight is a ring, like the avatar's: brightest at 60% of its
     # radius and dark in the middle, so each tile lights as the ring crosses it.
     spotc="#ffffff", spot=[(0, 0), (0.42, 0), (0.6, 0.9), (0.74, 0.32), (1, 0)],
-    glow=0.07,
 )
 
-# The two halos behind the card: centre, radius, and the way its arc of light
-# travels (1 clockwise). The first frames the name from the right, the second
-# sits on the right edge halfway down.
-RINGS = [((862, 118), 300, 1), ((1000, "{MID}"), 210, -1)]
+# The halos behind the card: centre, radius, the way its arc of light travels
+# (1 clockwise) and how long a lap takes. The first frames the name from the
+# right, the second sits on the right edge halfway down, the third rises from
+# the bottom corner. The third replaced a soft pool of light that the card's
+# edge cut in half (Ali, 2026-11-24: "why is it not a circle as well?").
+RINGS = [((862, 118), 300, 1, 22), ((1000, "{MID}"), 210, -1, 30), ((900, "{FOOT}"), 230, 1, 26)]
 
 # AI stays first, because it is the title. UI/UX and FRONTEND follow because
 # they are where the work is strongest; FULL STACK, the broadest claim, goes
@@ -448,17 +449,6 @@ LANDS = [(0.3, 0.7), (2.0, 2.4), (3.7, 4.1), (5.4, 5.9)]
 TOKENS_AT, TOKEN_GAP, TOKEN_RUN = 5.8, 0.3, 2.4
 
 
-def glow_grad(gid, colour, peak):
-    """A soft pool of light: the falloff a 110px blur once gave, drawn as a
-    gradient. Moving it repaints a gradient, where a blurred group had to be
-    blurred again every frame: 3.6 CPU cores down to about 0.6 when the
-    browser draws without the graphics chip (measured 2026-11-24)."""
-    stops = ((0, 1), (0.22, 0.93), (0.42, 0.72), (0.6, 0.45), (0.76, 0.2), (0.89, 0.06), (1, 0))
-    return (f'<radialGradient id="{gid}">' + "".join(
-        f'<stop offset="{o}" stop-color="{colour}" stop-opacity="{round(peak * a, 4)}"/>' for o, a in stops)
-        + '</radialGradient>')
-
-
 def shine_anim(a, b):
     """One eased pass from a to b per strip cycle, just after the answer lands."""
     k0, k1 = round(SHINE_AT / CYCLE, 4), round((SHINE_AT + SHINE_DUR) / CYCLE, 4)
@@ -469,21 +459,26 @@ def shine_anim(a, b):
 
 
 def field_defs(o, c):
-    """The name's shine, the low pool of light, and the halos' gradients."""
+    """The name's shine and the halos' gradients."""
     hi, name = c["hi"], c["name"]
     stops = ((0, name), (0.40, name), (0.50, c["sweep"]), (0.60, name), (1, name))
     o.append('    <linearGradient id="sweep" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="360" y2="0">'
              + "".join(f'<stop offset="{off}" stop-color="{col}"/>' for off, col in stops)
              + shine_anim(-230, 380) + '</linearGradient>')
-    o.append("    " + glow_grad("glow0", hi, c["glow"]))
-    # The corona: dark inside, brightest just inside the ring, gone a little past it.
-    o.append('    <radialGradient id="halo">' + "".join(
-        f'<stop offset="{a}" stop-color="{hi}" stop-opacity="{round(op, 3)}"/>'
-        for a, op in ((0, 0), (0.6, 0), (0.79, 0.045), (0.865, 0.2), (0.9, 0.06), (1, 0)))
-        + '</radialGradient>')
+    # The corona: dark inside, brightest just inside the ring, gone a little past
+    # it. Its brightest stop breathes, and every halo shares this gradient, so
+    # one animation makes all three breathe together.
+    stops = "".join(f'<stop offset="{a}" stop-color="{hi}" stop-opacity="{op}"/>'
+                    for a, op in ((0, 0), (0.6, 0), (0.79, 0.045)))
+    stops += (f'<stop offset="0.865" stop-color="{hi}" stop-opacity="0.2">'
+              f'<animate attributeName="stop-opacity" values="0.14;0.34;0.14" keyTimes="0;0.5;1" '
+              f'dur="7s" calcMode="spline" keySplines="0.45 0 0.55 1;0.45 0 0.55 1" '
+              f'repeatCount="indefinite"/></stop>')
+    stops += "".join(f'<stop offset="{a}" stop-color="{hi}" stop-opacity="{op}"/>' for a, op in ((0.9, 0.06), (1, 0)))
+    o.append(f'    <radialGradient id="halo">{stops}</radialGradient>')
     # Each arc of light fades from its tail to a bright head, along its own chord;
     # the arc spans 110 degrees from three o'clock.
-    for n, (_, r, sense) in enumerate(RINGS):
+    for n, (_, r, sense, _) in enumerate(RINGS):
         head, tail = (round(r * -0.342, 1), round(r * 0.94, 1)), (r, 0)
         a, b = (tail, head) if sense > 0 else (head, tail)
         o.append(f'    <linearGradient id="arc{n}" gradientUnits="userSpaceOnUse" x1="{a[0]}" y1="{a[1]}" '
@@ -493,24 +488,35 @@ def field_defs(o, c):
 
 
 def field(o, c):
-    """What lies behind everything: two halos like the avatar's, each with an arc
-    of light travelling round it, and one soft pool of light low down. Three
-    looping animations, the same as the three blobs they replace."""
+    """What lies behind everything: three halos like the avatar's ring, each with
+    an arc of light travelling round it, a spark at the arc's head and a faint
+    counter-arc across the ring. Spark and counter-arc ride the arc's own
+    rotation, so a ring costs one looping animation, and the three replace the
+    three blurred blobs one for one. Those blobs sat in a 110px blur that was
+    redone every frame: 3.6 CPU cores down to about 0.6 when the browser draws
+    without the graphics chip (measured 2026-11-24)."""
     hi = c["hi"]
-    for n, ((cx, cy), r, sense) in enumerate(RINGS):
+    tau = 2 * 3.14159265
+    for n, ((cx, cy), r, sense, lap) in enumerate(RINGS):
         arc = round(r * 1.92, 1)
-        gap = round(2 * 3.14159265 * r - arc, 1)
+        gap = round(tau * r - arc, 1)
         dash = f'stroke-dasharray="{arc} {gap}"'
+        # The spark sits on the arc's leading end; the counter-arc spans 36
+        # degrees directly across the ring from the arc's middle.
+        hx, hy = (round(r * -0.342, 1), round(r * 0.94, 1)) if sense > 0 else (r, 0)
+        span = round(r * 0.6283, 1)
+        counter = (f'stroke-dasharray="{span} {round(tau * r - span, 1)}" '
+                   f'stroke-dashoffset="{round(-r * 3.7874, 1)}"')
         o.append(f'    <g transform="translate({cx} {cy})">'
                  f'<circle r="{r + 44}" fill="url(#halo)"/>'
                  f'<circle r="{r}" stroke="{hi}" stroke-opacity="0.42" stroke-width="1.2"/>'
                  f'<g><circle r="{r}" stroke="url(#arc{n})" stroke-opacity="0.22" stroke-width="10" {dash}/>'
                  f'<circle r="{r}" stroke="url(#arc{n})" stroke-width="2.2" stroke-linecap="round" {dash}/>'
+                 f'<circle r="{r}" stroke="{hi}" stroke-opacity="0.3" stroke-width="1.3" stroke-linecap="round" {counter}/>'
+                 f'<circle cx="{hx}" cy="{hy}" r="7" fill="{hi}" fill-opacity="0.16"/>'
+                 f'<circle cx="{hx}" cy="{hy}" r="2.4" fill="{hi}"/>'
                  f'<animateTransform attributeName="transform" type="rotate" values="0;{360 * sense}" '
-                 f'dur="{22 if n == 0 else 30}s" repeatCount="indefinite"/></g></g>')
-    o.append('    <circle cx="720" cy="{LOW}" r="400" fill="url(#glow0)">'
-             '<animateTransform attributeName="transform" type="translate" '
-             'values="0 0; 90 -55; -35 -75; 0 0" dur="17s" repeatCount="indefinite"/></circle>')
+                 f'dur="{lap}s" repeatCount="indefinite"/></g></g>')
 
 
 def build(c, stats, langs, shots):
@@ -735,7 +741,7 @@ def build(c, stats, langs, shots):
             .replace("{H}", str(height))
             .replace("{HB}", str(height - 1))
             .replace("{MID}", str(round(height * 0.45)))
-            .replace("{LOW}", str(round(height * 0.88))) + "\n")
+            .replace("{FOOT}", str(height + 60)) + "\n")
 
 
 def main():

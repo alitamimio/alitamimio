@@ -29,7 +29,7 @@ commit, never squashed. Fast-forward the branch after the merge.
 | ARCHITECTURE | The request path `UI → GATEWAY → RETRIEVAL → MODEL` with the beam and the return lane; a `PLATFORM` row (PostgreSQL, Redis, Docker, Prometheus); an `INTERFACE LAYER` row (stream client, application state, components, render), still |
 | THIS YEAR | contributions, longest daily streak, active days; the language bar from every repo, drawn in once on load, with its as-of date. No sparkline |
 | Footer | None. Contact lives in the links row under the card |
-| Look | Since 2026-11-24, Eclipse, picked from five looks built side by side: the helmet avatar's neutrals (near-black, off-white, no hue), two halos like the avatar's ring with an arc of light travelling round each, ring bullets, a ring of light lapping the stack, and the name's shine once per strip cycle, after the answer lands. One dark card in both of GitHub's modes, Ali's call: the light version needed more darkness. The snake and the link buttons in greys |
+| Look | Since 2026-11-24, Eclipse, picked from five looks built side by side: the helmet avatar's neutrals (near-black, off-white, no hue), three halos like the avatar's ring, each with an arc of light, a spark at its head and a faint counter-arc travelling round it, the halos breathing together, ring bullets, a ring of light lapping the stack, and the name's shine once per strip cycle, after the answer lands. One dark card in both of GitHub's modes, Ali's call: the light version needed more darkness. The snake and the link buttons in greys |
 | Links row | LinkedIn, Email, X, How it's built |
 
 Cut along the way, and why: the credentials strip (duplicated the UI/UX row),
@@ -43,7 +43,7 @@ alternative terminal endings (Ali's call: v5's fade stays).
 ## Two constraints
 
 **Animation ceiling.** `verify.py` fails above 35 indefinitely repeating
-animations; the card ships at 34 (one for the stack's spotlight, four for the two shared clocks that cycle every project's screens). The Arabic stream needs roughly three, so it no longer fits without a cut.
+animations; the card ships at 35, the ceiling itself (one for the stack's spotlight, four for the two shared clocks that cycle every project's screens, three for the halos' arcs and one that makes all three halos breathe). Anything new needs a cut first; the Arabic stream needs roughly three.
 
 **Height.** 1000 × 2385. Every addition from here is paid for by a cut.
 
