@@ -435,11 +435,16 @@ def chips(o, y, items, c):
     return y + 40
 
 
-# When the request reaches each box, in seconds of the diagram's 6 s loop: it
-# leaves after each rest and lands at the next (HOPS), and each box is lit from
-# its landing to its leaving (LANDS).
-HOPS = (0.55, 1.15, 1.45, 2.05, 2.35, 2.95)
-LANDS = [(0.30, 0.55), (1.15, 1.45), (2.05, 2.35), (2.95, 3.4)]
+# The diagram's clock, in seconds. The request leaves each box and lands in the
+# next (HOPS), and each box is lit from its landing to its leaving (LANDS). Then
+# three response tokens run back along the lane, TOKEN_GAP apart, each taking
+# TOKEN_RUN. A hop is 1.3 s at one steady speed, about a third of a second across
+# each gap: Ali, 2026-11-24, after an eased 0.6 s hop crossed the gaps too fast
+# to follow. The loop grew from 6 s to 9 s to hold it.
+ARCH = 9
+HOPS = (0.7, 2.0, 2.4, 3.7, 4.1, 5.4)
+LANDS = [(0.3, 0.7), (2.0, 2.4), (3.7, 4.1), (5.4, 5.9)]
+TOKENS_AT, TOKEN_GAP, TOKEN_RUN = 5.8, 0.3, 2.4
 
 
 def glow_grad(gid, colour, peak):
@@ -618,27 +623,28 @@ def build(c, stats, langs, shots):
     o.append(txt(PAD, y - 12, "the request", c["faint"], 11))
     # The request, as a beam with a tail. Drawn BEFORE the nodes, so their
     # opaque fill hides it: it shows in the gaps and passes behind each box.
-    # It lands in each box, rests while the box works, and hops on with a
-    # strong ease-in-out, so it is seen at speed only in the gaps.
+    # It lands in each box, rests while the box works, and travels on at one
+    # steady speed. It starts and stops behind the boxes, so easing there would
+    # never be seen; in the gaps, where it is seen, it moves calmly.
     kp = "0;0;0.33333;0.33333;0.66667;0.66667;1;1"
-    kt = ";".join(str(round(t / 6, 4)) for t in (0, *HOPS, 6))
-    hop, rest = "0.77 0 0.175 1", "0 0 1 1"
+    kt = ";".join(str(round(t / ARCH, 4)) for t in (0, *HOPS, ARCH))
+    show = ";".join(str(round(t / ARCH, 4)) for t in (0, 0.1, 0.2, LANDS[3][0] + 0.1, LANDS[3][0] + 0.3, ARCH))
     o.append(f'  <g><rect x="-30" y="-2" width="30" height="4" rx="2" fill="url(#beam)"/>'
              f'<circle r="4.5" fill="{c["sweep"]}"/>'
-             f'<animateMotion dur="6s" repeatCount="indefinite" keyPoints="{kp}" '
-             f'keyTimes="{kt}" calcMode="spline" keySplines="{rest};{hop};{rest};{hop};{rest};{hop};{rest}" '
+             f'<animateMotion dur="{ARCH}s" repeatCount="indefinite" keyPoints="{kp}" '
+             f'keyTimes="{kt}" calcMode="linear" '
              f'path="M{xs[0]+bw/2} {cy} H{xs[3]+bw/2}"/>'
              f'<animate attributeName="opacity" values="0;0;1;1;0;0" '
-             f'keyTimes="0;0.04;0.06;0.49;0.53;1" dur="6s" repeatCount="indefinite"/></g>')
+             f'keyTimes="{show}" dur="{ARCH}s" repeatCount="indefinite"/></g>')
     for i, (top, sub) in enumerate(PIPE):
         # Each node brightens as the request lands in it and stays lit while
         # it rests there, placed by keyTimes so the glows stay locked to the beam.
         arrive, leave = LANDS[i]
-        kt = ";".join(str(round(t / 6, 4)) for t in (0, arrive - 0.2, arrive, leave, leave + 0.6, 6))
+        kt = ";".join(str(round(t / ARCH, 4)) for t in (0, arrive - 0.2, arrive, leave, leave + 0.6, ARCH))
         o.append(f'  <g><rect x="{xs[i]}" y="{y}" width="{bw}" height="{bh}" rx="10" '
                  f'fill="{c["inset"]}" stroke="{c["brand"]}" stroke-width="1.2" stroke-opacity="0.3">'
                  f'<animate attributeName="stroke-opacity" '
-                 f'values="0.3;0.3;1;1;0.3;0.3" keyTimes="{kt}" dur="6s" repeatCount="indefinite"/></rect>'
+                 f'values="0.3;0.3;1;1;0.3;0.3" keyTimes="{kt}" dur="{ARCH}s" repeatCount="indefinite"/></rect>'
                  f'<text x="{xs[i]+bw/2}" y="{y+21}" text-anchor="middle" font-size="11.5" '
                  f'font-weight="600" letter-spacing="1.6" fill="{c["ink"]}">{top}</text>'
                  f'<text x="{xs[i]+bw/2}" y="{y+39}" text-anchor="middle" font-size="11" '
@@ -649,14 +655,15 @@ def build(c, stats, langs, shots):
     o.append(f'  <path d="{lane}" stroke="{c["line"]}" stroke-width="1.5" fill="none" '
              f'stroke-dasharray="3 5"/>')
     for i in range(3):
-        at, end = round(0.55 + i * 0.05, 3), round(0.83 + i * 0.05, 3)
+        start = TOKENS_AT + i * TOKEN_GAP
+        at, end = round(start / ARCH, 3), round((start + TOKEN_RUN) / ARCH, 3)
         o.append(f'  <rect x="-4" y="-1.5" width="8" height="3" rx="1.5" fill="{c["sweep"]}" '
                  f'opacity="0">'
-                 f'<animateMotion dur="6s" repeatCount="indefinite" path="{lane}" '
+                 f'<animateMotion dur="{ARCH}s" repeatCount="indefinite" path="{lane}" '
                  f'keyPoints="0;0;1;1" keyTimes="0;{at};{end};1" calcMode="linear"/>'
                  f'<animate attributeName="opacity" values="0;0;0.95;0.95;0;0" '
                  f'keyTimes="0;{at};{round(at+0.02,3)};{round(end-0.02,3)};{end};1" '
-                 f'dur="6s" repeatCount="indefinite"/></rect>')
+                 f'dur="{ARCH}s" repeatCount="indefinite"/></rect>')
     o.append(txt((xs[0] + xs[3] + bw) / 2, ret + 17, "response tokens streamed back over SSE",
                  c["faint"], 11.5, anchor="middle"))
     y = ret + 50
