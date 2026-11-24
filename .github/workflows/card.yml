@@ -38,7 +38,7 @@ jobs:
       - name: Rebuild the card
         run: python tools/build.py
 
-      # The gate. Both themes parse, the animation count stays under the
+      # The gate. The card parses, the animation count stays under the
       # headless ceiling, no text runs off the card or out of its box, and
       # Chrome renders a frame mid-motion. A failure here stops the commit,
       # so a bad build cannot sit on the profile until someone notices.

@@ -3,7 +3,7 @@
 
 Five checks and a screenshot:
 
-  1. Both themes parse as XML, and so does every link button.
+  1. The card parses as XML, and so does every link button.
   2. The number of indefinitely-repeating animations stays under the ceiling a
      headless renderer can cope with (see build.py).
   3. No <text> runs past the card's right edge — the regression that a longer
@@ -13,7 +13,7 @@ Five checks and a screenshot:
   5. The layout hash matches tools/layout.sha256 (see tools/snapshot.py), so a
      refactor cannot move a section unseen.
 
-Then it shoots both themes with every `begin` shifted negative. A headless
+Then it shoots the card with every `begin` shifted negative. A headless
 screenshot driven by --virtual-time-budget stops advancing the clock on a
 document this animated, so the card comes out frozen on its first frame and
 looks broken. Shifting every begin back by the moment we want to see lands the
@@ -27,6 +27,7 @@ import argparse, os, pathlib, re, shutil, subprocess, sys, xml.etree.ElementTree
 W = 1000
 CEILING = 35
 MARGIN = 16
+THEMES = ("dark",)   # one card since 2026-11-24, dark in both of GitHub's modes
 
 
 def chrome():
@@ -160,7 +161,7 @@ out = pathlib.Path(a.out)
 out.mkdir(parents=True, exist_ok=True)
 bad = []
 
-for theme in ("dark", "light"):
+for theme in THEMES:
     svg_path = root / "assets" / f"card-{theme}.svg"
     svg = svg_path.read_text()
 

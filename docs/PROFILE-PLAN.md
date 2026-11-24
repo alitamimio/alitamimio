@@ -1,6 +1,8 @@
 # Profile plan
 
-Locked 2026-09-11, from the approved preview (v7 of the card rewrite).
+Locked 2026-09-11, from the approved preview (v7 of the card rewrite). Since
+2026-11-24 the card is black and white, one dark card in both of GitHub's
+modes: see the Look row.
 
 **Positioning.** AI Solutions Engineer is the title. UI/UX and frontend carry
 the evidence. Copy is a senior engineer's register: precise nouns, stated once,
@@ -19,15 +21,15 @@ commit, never squashed. Fast-forward the branch after the merge.
 
 | Block | What ships |
 |-------|------------|
-| Strip | `what do you build, end to end?` typed letter by letter through a soft-edged mask; `ROUTE → RETRIEVE → STREAM → RENDER`; the answer streams the same way and ends on the interface. Every line on one shared clock. The exchange holds, every line fades together at 11.8s, and it reloads. 14s cycle |
+| Strip | `what do you actually own on a project?` typed letter by letter through a soft-edged mask; `ROUTE → RETRIEVE → STREAM → RENDER`; the answer streams the same way and ends on the interface. Every line on one shared clock. The exchange holds, every line fades together at 11.8s, and it reloads. 14s cycle |
 | Identity | `ALI TAMIMI`, a full-width rule fading right, `AI Solutions Engineer`, `Full-stack engineer specialising in UI/UX and frontend architecture.`, `9XAI Fellow · Al Hussein Technical University`. No location pill, no mark |
-| WHAT I DO | AI → UI/UX → FRONTEND → FULL STACK, four filled diamonds, every label in ink, copy rewritten from the repos |
+| WHAT I DO | AI → UI/UX → FRONTEND → FULL STACK, four rings, every label in ink, copy rewritten from the repos |
 | STACK | `INTERFACE`: TypeScript, React, Next.js, Tailwind, shadcn/ui, Radix, Framer Motion, Vite. `SYSTEMS`: Python, FastAPI, Ollama, PostgreSQL, Redis, Docker, Prometheus, Node.js. Both labels in the brand. Figma is out until a repo evidences it |
 | SELECTED WORK | Khayarak and Rased, then FortiLink and Guess the Prompt (Ali's order, 2026-10-03), as a two column grid, each cycling three screens above the text with its landing page always first, two cards changing at a time, and the type flush with the image's left edge (Rased's landing page cleared for the card 2026-09-27). VOC360 as text only (may not be shown), spanning both columns beneath |
 | ARCHITECTURE | The request path `UI → GATEWAY → RETRIEVAL → MODEL` with the beam and the return lane; a `PLATFORM` row (PostgreSQL, Redis, Docker, Prometheus); an `INTERFACE LAYER` row (stream client, application state, components, render), still |
 | THIS YEAR | contributions, longest daily streak, active days; the language bar from every repo, drawn in once on load, with its as-of date. No sparkline |
 | Footer | None. Contact lives in the links row under the card |
-| Light theme | Every neutral leans toward the accent; the colour field shows |
+| Look | Since 2026-11-24, Eclipse, picked from five looks built side by side: the helmet avatar's neutrals (near-black, off-white, no hue), two halos like the avatar's ring with an arc of light travelling round each, ring bullets, a ring of light lapping the stack, and the name's shine once per strip cycle, after the answer lands. One dark card in both of GitHub's modes, Ali's call: the light version needed more darkness. The snake and the link buttons in greys |
 | Links row | LinkedIn, Email, X, How it's built |
 
 Cut along the way, and why: the credentials strip (duplicated the UI/UX row),
@@ -43,7 +45,7 @@ alternative terminal endings (Ali's call: v5's fade stays).
 **Animation ceiling.** `verify.py` fails above 35 indefinitely repeating
 animations; the card ships at 34 (one for the stack's spotlight, four for the two shared clocks that cycle every project's screens). The Arabic stream needs roughly three, so it no longer fits without a cut.
 
-**Height.** 1000 × 1924. Every addition from here is paid for by a cut.
+**Height.** 1000 × 2385. Every addition from here is paid for by a cut.
 
 ---
 

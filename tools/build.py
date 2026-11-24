@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Emit the profile card as one tall SVG, in both themes.
+"""Emit the profile card as one tall SVG, dark for every visitor.
 
 One image rather than several stacked: GitHub puts whitespace between block
 images, which would show as seams across a continuous background. And one
@@ -17,6 +17,12 @@ is missing the card still builds, without that block.
 The card was rebuilt on 2026-09-11 from a reviewed preview; docs/PROFILE-PLAN.md
 records what was decided and why. Copy is a senior engineer's register:
 precise nouns, said once, no em dashes.
+
+Since 2026-11-24 the card is black and white, to sit beside Ali's avatar (a
+black-and-white racing helmet inside a thin ring of light), and the ring is its
+signature: the "Eclipse" look, picked from five built side by side. It is dark
+in both of GitHub's modes, Ali's call on seeing the light version, so there is
+one card, assets/card-dark.svg, for every visitor.
 """
 import base64, json, pathlib
 
@@ -28,23 +34,25 @@ CONTENT = W - PAD * 2 - 40          # the width every section respects
 FONT = "system-ui,-apple-system,'Segoe UI',Roboto,sans-serif"
 MONO = "ui-monospace,SFMono-Regular,Menlo,Consolas,monospace"
 
+# The avatar's own neutrals: saturation 0, near-black, off-white highlights. `hi`
+# is the ring's light. Small type in faint stays at 4.5:1 or better on the ground.
 DARK = dict(
-    ground="#121517", ink="#f1f3f4", muted="#9fa4a7", faint="#707579",
-    line="#2a2e31", inset="#1a1e21", brand="#039bb9", sweep="#64d6f2",
-    live="#20ac88", track="#22282b",
-    blobs=[("#039bb9", .95), ("#027c93", .85), ("#00343f", .9)],
-    field=0.72, veil=0.06,
+    ground="#0a0a0a", ink="#ededed", muted="#a3a3a3", faint="#7c7c7c",
+    line="#262626", inset="#121212", brand="#ffffff", sweep="#ffffff",
+    track="#1c1c1c", hi="#ffffff", name="#d2d2d2",
+    # The language bar, largest share first. From the third on each tone is drawn
+    # at 0.55 opacity, which settles these at about #6c6c6c and #505050.
+    bar=["#f2f2f2", "#9a9a9a", "#bdbdbd", "#8a8a8a", "#8a8a8a", "#8a8a8a"],
+    # The stack's spotlight is a ring, like the avatar's: brightest at 60% of its
+    # radius and dark in the middle, so each tile lights as the ring crosses it.
+    spotc="#ffffff", spot=[(0, 0), (0.42, 0), (0.6, 0.9), (0.74, 0.32), (1, 0)],
+    glow=0.07,
 )
-LIGHT = dict(
-    # Every neutral leans toward the accent, and the colour field is allowed
-    # to show. The first light theme ran the field at 0.30 under a 0.30 white
-    # veil, which erased it, and every neutral was a plain grey.
-    ground="#f2f7f9", ink="#10161a", muted="#4d5c63", faint="#6d7e86",
-    line="#b7ccd5", inset="#e4eff3", brand="#027c93", sweep="#00b7d9",
-    live="#12866a", track="#cfe0e7",
-    blobs=[("#00b7d9", .85), ("#039bb9", .6), ("#64d6f2", .95)],
-    field=0.55, veil=0.10,
-)
+
+# The two halos behind the card: centre, radius, and the way its arc of light
+# travels (1 clockwise). The first frames the name from the right, the second
+# sits on the right edge halfway down.
+RINGS = [((862, 118), 300, 1), ((1000, "{MID}"), 210, -1)]
 
 # AI stays first, because it is the title. UI/UX and FRONTEND follow because
 # they are where the work is strongest; FULL STACK, the broadest claim, goes
@@ -107,6 +115,9 @@ ANSWER = [
 STRIP_H = 150
 CYCLE = 14
 FADE_AT, FADE_DUR = 11.8, 1.2
+# The shine crosses the name once per strip cycle, just after the answer lands
+# and before every line fades, rather than every five seconds on its own clock.
+SHINE_AT, SHINE_DUR = 9.8, 1.4
 
 MARK_COLOUR = False    # True paints the stack marks in their brand colours
 
@@ -255,7 +266,7 @@ def marks_row(o, y, group, c):
 
 
 def spotlight(o, rows, c):
-    """A soft glow lapping the stack at one steady speed.
+    """A ring of light lapping the stack at one steady speed.
 
     Along INTERFACE to the right, round the end, back along SYSTEMS and round
     again, lighting each icon, tile edge and tile face it passes. The glow is
@@ -281,8 +292,8 @@ def spotlight(o, rows, c):
     lap = f"M{xl} {yi} H{xr} A{r} {r} 0 0 1 {xr} {ys} H{xl} A{r} {r} 0 0 1 {xl} {yi} Z"
     mx, my = PAD - 14, rows[0][0] - 10
     mw, mh = CONTENT + 28, rows[-1][0] + tile + 10 - my
-    stops = "".join(f'<stop offset="{at}" stop-color="{c["sweep"]}" stop-opacity="{op}"/>'
-                    for at, op in ((0, 1), (0.35, 0.62), (0.7, 0.16), (1, 0)))
+    stops = "".join(f'<stop offset="{at}" stop-color="{c["spotc"]}" stop-opacity="{op}"/>'
+                    for at, op in c["spot"])
     o.append(f'  <defs><radialGradient id="spotg">{stops}</radialGradient>'
              f'<mask id="spotm" maskUnits="userSpaceOnUse" x="{mx}" y="{my}" width="{mw}" height="{mh}">'
              f'{"".join(shapes)}</mask></defs>')
@@ -290,7 +301,7 @@ def spotlight(o, rows, c):
              f'<animateMotion path="{lap}" dur="16s" begin="0s" repeatCount="indefinite"/></circle></g>')
 
 
-SCREEN_HOLD, SCREEN_FADE = 3.2, 0.7
+SCREEN_HOLD, SCREEN_FADE = 4.5, 0.7
 
 
 def screen_mask(o, made, phase, k, n):
@@ -316,10 +327,15 @@ def screen_mask(o, made, phase, k, n):
     else:
         vals, kt = "0;0;1;1;0", [0, on, full, dur - SCREEN_FADE, dur]
     begin = f"-{round(per / 2, 2)}s" if phase else "0s"
+    # The crossfade eases in and out; the holds and the drop behind a covering
+    # screen stay linear, since nothing moves in them.
+    ease, flat = "0.45 0 0.55 1", "0 0 1 1"
+    splines = [flat, ease, flat, flat, flat] if k < n - 1 else [flat, ease, flat, ease]
     o.append(f'  <mask id="{uid}" maskContentUnits="objectBoundingBox"><rect width="1" height="1" '
              f'fill="#fff" opacity="0"><animate attributeName="opacity" values="{vals}" '
              f'keyTimes="{";".join(str(round(t / dur, 5)) for t in kt)}" dur="{dur}s" '
-             f'begin="{begin}" repeatCount="indefinite"/></rect></mask>')
+             f'begin="{begin}" calcMode="spline" keySplines="{";".join(splines)}" '
+             f'repeatCount="indefinite"/></rect></mask>')
     return uid
 
 
@@ -359,14 +375,15 @@ def strip(o, c):
     o.append(type_in("a1", px + 22, ay, ANSWER[0], c["ink"], cq, 4.4, 2.6))
     o.append(type_in("a2", px + 22, ay + 22, ANSWER[1], c["ink"], cq, 7.0, 2.4))
 
-    # The caret glides with the question, blinks while the prompt waits, and
-    # goes dark while the answer streams. A path rather than a rect: verify.py
+    # The caret glides with the question, solid while it types as a real one
+    # is, blinks every half second while the prompt waits, and goes dark while
+    # the answer streams. A path rather than a rect: verify.py
     # reads a lone rect beside text as a chip whose type has escaped its box.
     full = round(len(ASK) * cw, 1)
     kx = [(0.0, "0 0"), (0.6, "0 0"), (2.5, f"{full} 0"), (CYCLE, f"{full} 0")]
-    ko, t, on = [], 0.0, 1
+    ko, t, on = [(0.0, 1)], 2.5, 1
     while t < 4.4 - 0.01:
-        ko.append((round(t, 2), on)); on ^= 1; t += 0.35
+        ko.append((round(t, 2), on)); on ^= 1; t += 0.5
     ko += [(4.4, 0), (CYCLE, 0)]
     o.append(f'  <path d="M{px+44} {qy-11} h7 v14 h-7 z" fill="{c["brand"]}" opacity="0">'
              f'<animateTransform attributeName="transform" type="translate" {keyed(kx, CYCLE)}/>'
@@ -418,6 +435,78 @@ def chips(o, y, items, c):
     return y + 40
 
 
+# When the request reaches each box, in seconds of the diagram's 6 s loop: it
+# leaves after each rest and lands at the next (HOPS), and each box is lit from
+# its landing to its leaving (LANDS).
+HOPS = (0.55, 1.15, 1.45, 2.05, 2.35, 2.95)
+LANDS = [(0.30, 0.55), (1.15, 1.45), (2.05, 2.35), (2.95, 3.4)]
+
+
+def glow_grad(gid, colour, peak):
+    """A soft pool of light: the falloff a 110px blur once gave, drawn as a
+    gradient. Moving it repaints a gradient, where a blurred group had to be
+    blurred again every frame: 3.6 CPU cores down to about 0.6 when the
+    browser draws without the graphics chip (measured 2026-11-24)."""
+    stops = ((0, 1), (0.22, 0.93), (0.42, 0.72), (0.6, 0.45), (0.76, 0.2), (0.89, 0.06), (1, 0))
+    return (f'<radialGradient id="{gid}">' + "".join(
+        f'<stop offset="{o}" stop-color="{colour}" stop-opacity="{round(peak * a, 4)}"/>' for o, a in stops)
+        + '</radialGradient>')
+
+
+def shine_anim(a, b):
+    """One eased pass from a to b per strip cycle, just after the answer lands."""
+    k0, k1 = round(SHINE_AT / CYCLE, 4), round((SHINE_AT + SHINE_DUR) / CYCLE, 4)
+    return (f'<animateTransform attributeName="gradientTransform" type="translate" additive="sum" '
+            f'values="{a} 0;{a} 0;{b} 0;{b} 0" keyTimes="0;{k0};{k1};1" calcMode="spline" '
+            f'keySplines="0 0 1 1;0.45 0 0.55 1;0 0 1 1" dur="{CYCLE}s" begin="0s" '
+            f'repeatCount="indefinite"/>')
+
+
+def field_defs(o, c):
+    """The name's shine, the low pool of light, and the halos' gradients."""
+    hi, name = c["hi"], c["name"]
+    stops = ((0, name), (0.40, name), (0.50, c["sweep"]), (0.60, name), (1, name))
+    o.append('    <linearGradient id="sweep" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="360" y2="0">'
+             + "".join(f'<stop offset="{off}" stop-color="{col}"/>' for off, col in stops)
+             + shine_anim(-230, 380) + '</linearGradient>')
+    o.append("    " + glow_grad("glow0", hi, c["glow"]))
+    # The corona: dark inside, brightest just inside the ring, gone a little past it.
+    o.append('    <radialGradient id="halo">' + "".join(
+        f'<stop offset="{a}" stop-color="{hi}" stop-opacity="{round(op, 3)}"/>'
+        for a, op in ((0, 0), (0.6, 0), (0.79, 0.045), (0.865, 0.2), (0.9, 0.06), (1, 0)))
+        + '</radialGradient>')
+    # Each arc of light fades from its tail to a bright head, along its own chord;
+    # the arc spans 110 degrees from three o'clock.
+    for n, (_, r, sense) in enumerate(RINGS):
+        head, tail = (round(r * -0.342, 1), round(r * 0.94, 1)), (r, 0)
+        a, b = (tail, head) if sense > 0 else (head, tail)
+        o.append(f'    <linearGradient id="arc{n}" gradientUnits="userSpaceOnUse" x1="{a[0]}" y1="{a[1]}" '
+                 f'x2="{b[0]}" y2="{b[1]}"><stop offset="0" stop-color="{hi}" stop-opacity="0"/>'
+                 f'<stop offset="0.65" stop-color="{hi}" stop-opacity="0.55"/>'
+                 f'<stop offset="1" stop-color="{hi}" stop-opacity="1"/></linearGradient>')
+
+
+def field(o, c):
+    """What lies behind everything: two halos like the avatar's, each with an arc
+    of light travelling round it, and one soft pool of light low down. Three
+    looping animations, the same as the three blobs they replace."""
+    hi = c["hi"]
+    for n, ((cx, cy), r, sense) in enumerate(RINGS):
+        arc = round(r * 1.92, 1)
+        gap = round(2 * 3.14159265 * r - arc, 1)
+        dash = f'stroke-dasharray="{arc} {gap}"'
+        o.append(f'    <g transform="translate({cx} {cy})">'
+                 f'<circle r="{r + 44}" fill="url(#halo)"/>'
+                 f'<circle r="{r}" stroke="{hi}" stroke-opacity="0.42" stroke-width="1.2"/>'
+                 f'<g><circle r="{r}" stroke="url(#arc{n})" stroke-opacity="0.22" stroke-width="10" {dash}/>'
+                 f'<circle r="{r}" stroke="url(#arc{n})" stroke-width="2.2" stroke-linecap="round" {dash}/>'
+                 f'<animateTransform attributeName="transform" type="rotate" values="0;{360 * sense}" '
+                 f'dur="{22 if n == 0 else 30}s" repeatCount="indefinite"/></g></g>')
+    o.append('    <circle cx="720" cy="{LOW}" r="400" fill="url(#glow0)">'
+             '<animateTransform attributeName="transform" type="translate" '
+             'values="0 0; 90 -55; -35 -75; 0 0" dur="17s" repeatCount="indefinite"/></circle>')
+
+
 def build(c, stats, langs, shots):
     o = [f'<svg xmlns="http://www.w3.org/2000/svg" width="{W}" height="{{H}}" '
          f'viewBox="0 0 {W} {{H}}" fill="none" font-family="{FONT}">']
@@ -425,18 +514,10 @@ def build(c, stats, langs, shots):
     # ---- defs -------------------------------------------------------------
     o.append('  <defs>')
     o.append(f'    <clipPath id="card"><rect width="{W}" height="{{H}}" rx="18"/></clipPath>')
-    o.append('    <filter id="soft" x="-60%" y="-60%" width="220%" height="220%">'
-             '<feGaussianBlur stdDeviation="110"/></filter>')
-    o.append('    <linearGradient id="sweep" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="360" y2="0">')
-    for off, col in ((0, c["ink"]), (0.40, c["ink"]), (0.50, c["sweep"]),
-                     (0.60, c["ink"]), (1, c["ink"])):
-        o.append(f'      <stop offset="{off}" stop-color="{col}"/>')
-    o.append('      <animateTransform attributeName="gradientTransform" type="translate" '
-             f'from="-420 0" to="{W + 120} 0" dur="5s" repeatCount="indefinite"/>')
-    o.append('    </linearGradient>')
+    field_defs(o, c)
     o.append(f'    <linearGradient id="beam" x1="0" y1="0" x2="1" y2="0">'
              f'<stop offset="0" stop-color="{c["sweep"]}" stop-opacity="0"/>'
-             f'<stop offset="1" stop-color="{c["sweep"]}" stop-opacity="0.85"/></linearGradient>')
+             f'<stop offset="1" stop-color="{c["sweep"]}" stop-opacity="0.9"/></linearGradient>')
     o.append(f'    <linearGradient id="rule" x1="0" y1="0" x2="1" y2="0">'
              f'<stop offset="0" stop-color="{c["brand"]}" stop-opacity="0.9"/>'
              f'<stop offset="1" stop-color="{c["brand"]}" stop-opacity="0"/></linearGradient>')
@@ -445,18 +526,7 @@ def build(c, stats, langs, shots):
     # ---- ground and field -------------------------------------------------
     o.append('  <g clip-path="url(#card)">')
     o.append(f'    <rect width="{W}" height="{{H}}" fill="{c["ground"]}"/>')
-    o.append(f'    <g filter="url(#soft)" opacity="{c["field"]}">')
-    # Three periods, mutually prime, so the field never visibly loops back.
-    drift = [("0 0; -70 80; 45 -40; 0 0", "11s"),
-             ("0 0; 60 -90; -65 40; 0 0", "13s"),
-             ("0 0; 90 -55; -35 -75; 0 0", "17s")]
-    spots = [(830, 150, 200), (940, "{MID}", 175), (720, "{LOW}", 160)]
-    for (cx, cy, r), (fill, op), (vals, dur) in zip(spots, c["blobs"], drift):
-        o.append(f'      <circle cx="{cx}" cy="{cy}" r="{r}" fill="{fill}" opacity="{op}">'
-                 f'<animateTransform attributeName="transform" type="translate" '
-                 f'values="{vals}" dur="{dur}" repeatCount="indefinite"/></circle>')
-    o.append('    </g>')
-    o.append(f'    <rect width="{W}" height="{{H}}" fill="{c["ground"]}" opacity="{c["veil"]}"/>')
+    field(o, c)
     o.append('  </g>')
     o.append(f'  <rect x="0.5" y="0.5" width="{W-1}" height="{{HB}}" rx="18" fill="none" stroke="{c["line"]}"/>')
 
@@ -480,7 +550,7 @@ def build(c, stats, langs, shots):
     o.append(section(y, "WHAT I DO", c))
     y += 40
     for label, detail in ROLES:
-        o.append(f'  <path d="M{PAD} {y-5} L{PAD+5} {y} L{PAD} {y+5} L{PAD-5} {y} Z" fill="{c["brand"]}"/>')
+        o.append(f'  <circle cx="{PAD}" cy="{y}" r="4.3" stroke="{c["brand"]}" stroke-width="1.6" fill="none"/>')
         o.append(txt(PAD + 18, y + 4, label, c["ink"], 11.5, 600, 1.6))
         o.append(txt(PAD + 136, y + 4, detail, c["ink"], 14.5))
         y += 34
@@ -548,22 +618,27 @@ def build(c, stats, langs, shots):
     o.append(txt(PAD, y - 12, "the request", c["faint"], 11))
     # The request, as a beam with a tail. Drawn BEFORE the nodes, so their
     # opaque fill hides it: it shows in the gaps and passes behind each box.
+    # It lands in each box, rests while the box works, and hops on with a
+    # strong ease-in-out, so it is seen at speed only in the gaps.
+    kp = "0;0;0.33333;0.33333;0.66667;0.66667;1;1"
+    kt = ";".join(str(round(t / 6, 4)) for t in (0, *HOPS, 6))
+    hop, rest = "0.77 0 0.175 1", "0 0 1 1"
     o.append(f'  <g><rect x="-30" y="-2" width="30" height="4" rx="2" fill="url(#beam)"/>'
              f'<circle r="4.5" fill="{c["sweep"]}"/>'
-             f'<animateMotion dur="6s" repeatCount="indefinite" keyPoints="0;0;1;1" '
-             f'keyTimes="0;0.06;0.62;1" calcMode="linear" '
+             f'<animateMotion dur="6s" repeatCount="indefinite" keyPoints="{kp}" '
+             f'keyTimes="{kt}" calcMode="spline" keySplines="{rest};{hop};{rest};{hop};{rest};{hop};{rest}" '
              f'path="M{xs[0]+bw/2} {cy} H{xs[3]+bw/2}"/>'
-             f'<animate attributeName="opacity" values="0;1;1;0;0" '
-             f'keyTimes="0;0.07;0.6;0.64;1" dur="6s" repeatCount="indefinite"/></g>')
+             f'<animate attributeName="opacity" values="0;0;1;1;0;0" '
+             f'keyTimes="0;0.04;0.06;0.49;0.53;1" dur="6s" repeatCount="indefinite"/></g>')
     for i, (top, sub) in enumerate(PIPE):
-        # Each node brightens as the request reaches it, placed by keyTimes so
-        # the glows stay locked to the beam.
-        at = 0.06 + i * 0.18
+        # Each node brightens as the request lands in it and stays lit while
+        # it rests there, placed by keyTimes so the glows stay locked to the beam.
+        arrive, leave = LANDS[i]
+        kt = ";".join(str(round(t / 6, 4)) for t in (0, arrive - 0.2, arrive, leave, leave + 0.6, 6))
         o.append(f'  <g><rect x="{xs[i]}" y="{y}" width="{bw}" height="{bh}" rx="10" '
                  f'fill="{c["inset"]}" stroke="{c["brand"]}" stroke-width="1.2" stroke-opacity="0.3">'
                  f'<animate attributeName="stroke-opacity" '
-                 f'values="0.3;0.3;1;0.3;0.3" keyTimes="0;{round(at-0.05,3)};{at};'
-                 f'{round(at+0.09,3)};1" dur="6s" repeatCount="indefinite"/></rect>'
+                 f'values="0.3;0.3;1;1;0.3;0.3" keyTimes="{kt}" dur="6s" repeatCount="indefinite"/></rect>'
                  f'<text x="{xs[i]+bw/2}" y="{y+21}" text-anchor="middle" font-size="11.5" '
                  f'font-weight="600" letter-spacing="1.6" fill="{c["ink"]}">{top}</text>'
                  f'<text x="{xs[i]+bw/2}" y="{y+39}" text-anchor="middle" font-size="11" '
@@ -574,7 +649,7 @@ def build(c, stats, langs, shots):
     o.append(f'  <path d="{lane}" stroke="{c["line"]}" stroke-width="1.5" fill="none" '
              f'stroke-dasharray="3 5"/>')
     for i in range(3):
-        at, end = round(0.6 + i * 0.05, 3), round(0.88 + i * 0.05, 3)
+        at, end = round(0.55 + i * 0.05, 3), round(0.83 + i * 0.05, 3)
         o.append(f'  <rect x="-4" y="-1.5" width="8" height="3" rx="1.5" fill="{c["sweep"]}" '
                  f'opacity="0">'
                  f'<animateMotion dur="6s" repeatCount="indefinite" path="{lane}" '
@@ -620,10 +695,9 @@ def build(c, stats, langs, shots):
             top = sorted(by.items(), key=lambda kv: -kv[1])[:5]
             shown = sum(v for _, v in top)
             segs = top + ([("Other", total - shown)] if total - shown > 0 else [])
-            # From the fourth language on, the tone is faint rather than the
-            # hairline colour: at line on the dark ground, HTML's legend dot
-            # did not show at all.
-            tone = [c["sweep"], c["brand"], c["muted"], c["faint"], c["faint"], c["faint"]]
+            # Greys, largest share brightest. Never the hairline colour: at line
+            # on the dark ground, HTML's legend dot did not show at all.
+            tone = c["bar"]
             o.append(f'  <clipPath id="langbar"><rect x="{PAD}" y="{y}" width="{CONTENT}" height="10">'
                      f'<animate attributeName="width" values="0;{CONTENT}" dur="1.1s" begin="0s" '
                      f'fill="freeze" calcMode="spline" keySplines="0.16 1 0.3 1"/></rect></clipPath>')
@@ -682,7 +756,7 @@ def main():
         if found:
             shots[name] = found
 
-    for name, palette in (("dark", DARK), ("light", LIGHT)):
+    for name, palette in (("dark", DARK),):
         out = assets / f"card-{name}.svg"
         svg = build(palette, stats, langs, shots)
         out.write_text(svg)
